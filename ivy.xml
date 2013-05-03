@@ -1,0 +1,9 @@
+<ivy-module version="2.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+
+    <info organisation="lindenb" module="main"/>
+    <dependencies defaultconf="default">
+        <dependency org="org.xerial" name="sqlite-jdbc"  rev="3.7.2" />
+    </dependencies>
+</ivy-module>

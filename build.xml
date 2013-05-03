@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
+    <description>NGS Projects</description>
+	<property file="build.properties"/>
+
+
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+
+    <property file="build.properties"/>
+	
+	<path id="picard.lib" description="picard.jars">
+		<fileset  dir="${picard.dir}">
+	        <include name="picard-${picard.version}.jar"/>
+			<include name="sam-${picard.version}.jar"/>
+		</fileset>
+	</path>
+		
+	<path id="vizbam.jar">
+		<path location="${vizbam}"/>
+		<path refid="picard.lib"/>
+    </path>
+	
+	<path id="sqlite.jars">
+		<path location="/commun/data/packages/ivy/local/cache/org.xerial/sqlite-jdbc/jars/sqlite-jdbc-3.7.2.jar"/>
+	</path>
+		
+	<path id="servlet.jars">
+		<path location="${glassfish.dir}/glassfish/modules/javax.servlet-api.jar"/>
+	</path>
+	
+        
+	<path id="compile.jar">
+		<path refid="sqlite.jars"/>
+		<path refid="servlet.jars"/>
+		<path refid="vizbam.jar"/>
+	</path>
+	
+	
+    <target name="all" depends="deploy"  description="Build All">
+        
+    </target>
+	
+    <target name="deploy" depends="dist/ngsproject.war"  description="Deploy">
+        <exec executable="${asadmin}" failonerror="true">
+        	<arg value="deploy"/>
+        	<arg value="--port"/> <arg value="8228"/>
+        	<arg value="--force"/> <arg value="true"/>
+        	<arg value="dist/ngsproject.war"/>
+        </exec>
+    </target>
+	
+	 <target name="undeploy"  description="Deploy">
+	        <exec executable="${asadmin}" failonerror="false">
+	        	<arg value="undeploy"/>
+	        	<arg value="--port"/> <arg value="8228"/>
+	        	<arg value="dist/ngsproject.war"/>
+	        </exec>
+	    </target>
+   
+	<target name="dist/ngsproject.war">
+		<mkdir dir="dist"/>
+		<mkdir dir="tmp"/>
+		
+		<javac destdir="tmp" 
+			srcdir="src/main/java"
+			debug="true"
+			includeantruntime="false">
+				<classpath refid="compile.jar"/>
+				<include name="**/*.java" />
+		</javac>
+
+		
+		<war destfile="dist/ngsproject.war" webxml="./src/main/webapp/WEB-INF/web.xml">
+			<lib file="/commun/data/packages/ivy/local/cache/org.xerial/sqlite-jdbc/jars/sqlite-jdbc-3.7.2.jar"/>
+			<lib file="${picard.dir}/picard-${picard.version}.jar"/>
+			<lib file="${picard.dir}/sam-${picard.version}.jar"/>
+			<lib file="${vizbam}"/>
+			
+			<classes dir="tmp"/>
+			<fileset dir="./src/main/webapp">
+					<include name="**/*.jsp"/>
+					<include name="**/*.css"/>
+					<include name="**/*.tag"/>
+					<include name="**/*.js"/>
+			</fileset>
+				
+		   
+		</war>
+		
+		<delete dir="tmp"/>	
+	</target>
+	
+		
+	<target name="download-ivy" unless="skip.download">
+
+	        <mkdir dir="${ivy.jar.dir}"/>
+	        <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+	            dest="${ivy.jar.file}" usetimestamp="true"/>
+	</target>
+
+	    <target name="install-ivy" depends="download-ivy" description="install ivy">
+	        <path id="ivy.lib.path">
+	            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+	        </path>
+	        <taskdef
+	            resource="org/apache/ivy/ant/antlib.xml"
+	            uri="antlib:org.apache.ivy.ant"
+	            classpathref="ivy.lib.path"
+	        />
+	    </target>
+
+
+	  <target name="ivy.libs" depends="install-ivy"  description="">
+	    <ivy:cachepath pathid="lib.path.id"/>
+	  </target>
+
+	<target name="ivy.clean">
+		<ivy:cleancache />
+	</target>
+    
+    
+
+    
+
+    
+</project>
