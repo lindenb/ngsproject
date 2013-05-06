@@ -4,10 +4,10 @@ import java.io.File;
 
 
 public interface Bam extends ActiveRecord
-{
-public String getPath();
-public File getFile();
-public String getName();
-public Sample getSample();
-public Reference getReference();
-}
+	{
+	public String getPath();
+	public File getFile();
+	public String getName();
+	public Sample getSample();
+	public Reference getReference();
+	}

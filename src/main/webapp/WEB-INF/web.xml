@@ -48,4 +48,17 @@
 	<url-pattern>/ngsprojects/*</url-pattern>
   </servlet-mapping>
   
+  
+<servlet>
+	<servlet-name>samtoolsview</servlet-name>
+	<servlet-class>com.github.lindenb.ngsproject.SAMViewServlet</servlet-class>
+	<load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+	<servlet-name>samtoolsview</servlet-name>
+	<url-pattern>/samtoolsview/*</url-pattern>
+  </servlet-mapping>  
+  
+  
 </web-app>

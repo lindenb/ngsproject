@@ -9,4 +9,5 @@ public String getName();
 public String getDescription();
 public List<Bam> getBams();
 public Group getGroup();
+public Bam getBamById(long bamid);
 }

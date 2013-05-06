@@ -53,7 +53,7 @@ private static final  SQLRowExtractor<String>  STRING_EXTRACTOR = new SQLRowExtr
 		@Override
 		public List<User> getUsers() { return getModel().getAllUsers(); }
 		};
-	
+		
 	
 private DataSource dataSource;
 public Model(DataSource dataSource)
@@ -181,12 +181,24 @@ protected class DefaultActiveRecord
 					{
 					return getString(this,"description");
 					}
-				if(methodName.equals("getBams"))
+				if( methodName.equals("getBams") ||
+					methodName.equals("getBamById"))
 					{
-					return manyToMany(
+					List<Bam> L=manyToMany(
 							Bam.class,
 							"select distinct bam_id from project2bam where project_id=?",
 							id);
+					if(methodName.equals("getBamById"))
+						{
+						Long bamId=(Long)args[0];
+						if(bamId==null || bamId<1L) return null;
+						for(Bam b:L) 
+							{
+							if(b.getId()==bamId) return b;
+							}
+						return null;
+						}
+					return L;
 					}
 				if(methodName.equals("getGroup"))
 					{
@@ -210,11 +222,15 @@ protected class DefaultActiveRecord
 					}
 				if( methodName.equals("getPath") ||
 					methodName.equals("getFile") ||
-					methodName.equals("getIndexedFastaSequenceFile"))
+					methodName.equals("getIndexedFastaSequenceFile")
+					)
 					{
 					String path= getString(this,"path");
 					if( methodName.equals("getFile")) return new File(path);
-					if( methodName.equals("getIndexedFastaSequenceFile")) return Model.this.getIndexedFastaSequenceFileByPath(path);
+					if( methodName.equals("getIndexedFastaSequenceFile"))
+						{
+						return Model.this.getIndexedFastaSequenceFileByPath(path);
+						}
 					return path;
 					}
 				break;

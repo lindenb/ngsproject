@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.github.lindenb.ngsproject.model.Bam;
 import com.github.lindenb.ngsproject.model.Model;
 import com.github.lindenb.ngsproject.model.Project;
 import com.github.lindenb.ngsproject.model.User;
@@ -54,12 +55,24 @@ public class NGSProjectController extends HttpServlet
 			Project project= model.getProjectById(Long.parseLong(path[1]));
 			if(project==null) throw new ServletException("Cannot find project "+path[1]);
 			req.setAttribute("project",project);
-			
+			dispathPath="/WEB-INF/jsp/project.jsp";
 			String pos=req.getParameter("pos");
 			if(pos==null) pos="";
 			req.setAttribute("pos",pos);
 
-			dispathPath="/WEB-INF/jsp/project.jsp";
+			
+			if(path.length>3 && path[2].equals("bam") &&  isULong(path[3]))
+				{
+				Bam bam=project.getBamById(Long.parseLong(path[3]));
+				if(bam!=null)
+					{
+					dispathPath="/WEB-INF/jsp/bam.jsp";
+					req.setAttribute("bam",bam);
+					}
+				}
+			
+			
+
 			}
 		else
 			{
