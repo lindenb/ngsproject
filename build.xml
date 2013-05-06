@@ -20,9 +20,6 @@
 		<path refid="picard.lib"/>
     </path>
 	
-	<path id="sqlite.jars">
-		<path location="/commun/data/packages/ivy/local/cache/org.xerial/sqlite-jdbc/jars/sqlite-jdbc-3.7.2.jar"/>
-	</path>
 		
 	<path id="servlet.jars">
 		<path location="${glassfish.dir}/glassfish/modules/javax.servlet-api.jar"/>
@@ -30,7 +27,6 @@
 	
         
 	<path id="compile.jar">
-		<path refid="sqlite.jars"/>
 		<path refid="servlet.jars"/>
 		<path refid="vizbam.jar"/>
 	</path>
@@ -71,7 +67,6 @@
 
 		
 		<war destfile="dist/ngsproject.war" webxml="./src/main/webapp/WEB-INF/web.xml">
-			<lib file="/commun/data/packages/ivy/local/cache/org.xerial/sqlite-jdbc/jars/sqlite-jdbc-3.7.2.jar"/>
 			<lib file="${picard.dir}/picard-${picard.version}.jar"/>
 			<lib file="${picard.dir}/sam-${picard.version}.jar"/>
 			<lib file="${vizbam}"/>
@@ -91,36 +86,57 @@
 	</target>
 	
 	<!-- == DATABASE ======================================================================= -->
-	<target name="create-database">
-			<echo file="tmp.sql">connect 'jdbc:derby:${database.name};create=true;user=admin;password=adminadmin';
-				disconnect;
-			</echo>
-	        <exec executable="${ij}" failonerror="true">
+	<target name="create.database" unless="no.create.database">
+			<echo file="tmp.sql">connect 'jdbc:derby:${database.name};create=true;user=admin;password=adminadmin';</echo>
+			<concat destfile="tmp.sql"  append="true">
+				<filelist dir="src/main/resources/sql" files="schema.sql"/>
+			</concat>
+		  	<concat destfile="tmp.sql" append="true">disconnect;</concat>
+	        <exec executable="${ij}" failonerror="false">
 	        	<arg value="tmp.sql"/>
 	        </exec>
 			<delete file="tmp.sql"/>
 	 </target>
 
 	
-	<target name="start-database">
+	<target name="start.database" depends="create.database">
 			<mkdir dir="${database.name}"/>
 	        <exec executable="${asadmin}" failonerror="true">
-	        	<arg vamie="start-database"/>
+	        	<arg value="start-database"/>
 	        	<arg value="--dbhome"/> <arg value="${database.name}"/>
 	        </exec>
 	 </target>
 
-	<target name="stop-database">
-	        <exec executable="${asadmin}" failonerror="true">
-	        	<arg vamie="start-database"/>
+	<target name="load.data" depends="start.database">
+		<echo file="tmp.sql">connect 'jdbc:derby://localhost:1527/${database.name};user=admin;password=adminadmin;create=false';</echo>
+		<concat destfile="tmp.sql"  append="true">
+			<filelist dir="src/main/resources/sql" files="data.sql"/>
+		</concat>
+	  	<concat destfile="tmp.sql" append="true">disconnect;</concat>
+        <exec executable="${ij}" failonerror="false">
+        	<arg value="tmp.sql"/>
+        </exec>
+		<delete file="tmp.sql"/>
+	</target>
+	
+	<target name="stop.database">
+	        <exec executable="${asadmin}" failonerror="false">
 	        	<arg value="stop-database"/>
 	        </exec>
 	 </target>
 	
 	
-	<target name="create-jdbc-resource">
-	        <exec executable="${asadmin}" failonerror="true">
+	<target name="dump.database">
+        <exec executable="${asadmin}" failonerror="false">
+        	<arg value="stop-database"/>
+        </exec>
+	</target>
+	
+	
+	<target name="create-jdbc-resource" >
+	        <exec executable="${asadmin}" failonerror="true" >
 	        	<arg value="create-jdbc-resource"/>
+	        	<arg value="--target"/> <arg value="domain"/> 
 	        	<arg value="--connectionpoolid"/> <arg value="${database.name}"/>
 	        	<arg value="jdbc/${database.name}"/>
 	        </exec>

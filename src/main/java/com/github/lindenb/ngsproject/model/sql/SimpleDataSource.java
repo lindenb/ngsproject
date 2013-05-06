@@ -1,13 +1,10 @@
 package com.github.lindenb.ngsproject.model.sql;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
@@ -19,24 +16,14 @@ import javax.sql.DataSource;
 public class SimpleDataSource implements DataSource
 	{
 	private static long ID_GENERATOR=0L;
-	private File dbPath;
+	private String jdbcuri;
 	private List<Connection> connections;
+	private String defaultSchema;
 	
-	static {{
-		try {
-			Class.forName("org.sqlite.JDBC");
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-			}
-		catch (Throwable e) {
-			e.printStackTrace();
-			}
-		
-		}}
-	public SimpleDataSource(File dbPath)
+	public SimpleDataSource(String jdbcuri)
 		{
 		this.connections=new ArrayList<Connection>();
-		this.dbPath=dbPath;
+		this.jdbcuri=jdbcuri;
 		}
 	
 	private void log(Object o) throws SQLException
@@ -150,12 +137,36 @@ public class SimpleDataSource implements DataSource
 	
 	private Connection wrap(Connection con)
 		{
+
 		return (Connection)
 		        java.lang.reflect.Proxy.newProxyInstance(
 		        Connection.class.getClassLoader(),
 		        new Class[]{java.sql.Connection.class},
 		        new ConnexionProxy(con)
 		        );
+		}
+	
+	public void setDefaultSchema(String defaultSchema)
+		{
+		this.defaultSchema = defaultSchema;
+		}
+	
+	public String getDefaultSchema()
+		{
+		return defaultSchema;
+		}
+	
+	
+	public Connection createNativeConnection(String userid, String password) throws SQLException
+		{
+		log("Create new Connection");
+		Connection con= DriverManager.getConnection(
+				this.jdbcuri,
+				userid,
+				password
+				);
+		if(getDefaultSchema()!=null) con.setSchema(getDefaultSchema());
+		return con;
 		}
 	
 	@Override
@@ -166,51 +177,14 @@ public class SimpleDataSource implements DataSource
 			{
 			Connection con=this.connections.remove(0);
 			try { if(con==null || con.isClosed()) continue; } catch(SQLException err){ continue;}
+			try { con.clearWarnings(); }catch(SQLException err) {}
 			log("recycle old connection");
+			if(getDefaultSchema()!=null) con.setSchema(getDefaultSchema());
 			return wrap(con);
 			}
-		log("Create new Connection");
-		Connection con= DriverManager.getConnection(
-				"jdbc:sqlite:"+this.dbPath,
-				userid,
-				password
-				);
+		Connection con=createNativeConnection(userid,password);
 		con.setReadOnly(true);
 		return wrap(con);
 		}
 	
-	public static void main(String[] args) throws Exception
-		{
-		SimpleDataSource ds=new SimpleDataSource(new File("/home/lindenb/jeter.sqlite"));
-		ds.setLogWriter(new PrintWriter(System.err));
-		Connection cons[]=new Connection[3];
-		for(int i=0;i< cons.length;++i)
-			{
-			cons[i]=ds.getConnection();
-			}
-		for(int i=0;i< cons.length;++i)
-			{
-			ds.getLogWriter().println(cons[i]);
-			PreparedStatement pstmt=cons[i].prepareStatement("select midline from Hsp");
-			ResultSet row=pstmt.executeQuery();
-			while(row.next())
-				{
-				System.out.println(row.getString(1));
-				}
-			pstmt.close();
-			}
-		
-		
-		for(int i=0;i< cons.length;++i)
-		{
-		cons[i].close();
-		}
-		
-		for(int i=0;i< cons.length;++i)
-			{
-			cons[i].close();
-			}
-		
-		ds.close();
-		}
 }
