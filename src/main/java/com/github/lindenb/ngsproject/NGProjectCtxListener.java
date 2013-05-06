@@ -71,6 +71,8 @@ public class NGProjectCtxListener implements ServletContextListener
 		{
 		SimpleDataSource ds=(SimpleDataSource)ctx.getServletContext().getAttribute("datasource");
 		if(ds!=null) ds.close();
-		CallTview.dispose();
+		Model model=(Model)ctx.getServletContext().getAttribute("model");
+		if(model!=null) model.dispose();
+
 		}
 	}

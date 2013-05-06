@@ -2,11 +2,11 @@
 <project name="project" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
     <description>NGS Projects</description>
 	<property file="build.properties"/>
-
-
 	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
-
     <property file="build.properties"/>
+	<property name="database.name" value="ngsdb" />
+	<property name="ij" value="${glassfish.dir}/javadb/bin/ij"/>
+
 	
 	<path id="picard.lib" description="picard.jars">
 		<fileset  dir="${picard.dir}">
@@ -90,7 +90,43 @@
 		<delete dir="tmp"/>	
 	</target>
 	
-		
+	<!-- == DATABASE ======================================================================= -->
+	<target name="create-database">
+			<echo file="tmp.sql">connect 'jdbc:derby:${database.name};create=true;user=admin;password=adminadmin';
+				disconnect;
+			</echo>
+	        <exec executable="${ij}" failonerror="true">
+	        	<arg value="tmp.sql"/>
+	        </exec>
+			<delete file="tmp.sql"/>
+	 </target>
+
+	
+	<target name="start-database">
+			<mkdir dir="${database.name}"/>
+	        <exec executable="${asadmin}" failonerror="true">
+	        	<arg vamie="start-database"/>
+	        	<arg value="--dbhome"/> <arg value="${database.name}"/>
+	        </exec>
+	 </target>
+
+	<target name="stop-database">
+	        <exec executable="${asadmin}" failonerror="true">
+	        	<arg vamie="start-database"/>
+	        	<arg value="stop-database"/>
+	        </exec>
+	 </target>
+	
+	
+	<target name="create-jdbc-resource">
+	        <exec executable="${asadmin}" failonerror="true">
+	        	<arg value="create-jdbc-resource"/>
+	        	<arg value="--connectionpoolid"/> <arg value="${database.name}"/>
+	        	<arg value="jdbc/${database.name}"/>
+	        </exec>
+	 </target>
+	
+	<!-- == IVY ======================================================================= -->
 	<target name="download-ivy" unless="skip.download">
 
 	        <mkdir dir="${ivy.jar.dir}"/>

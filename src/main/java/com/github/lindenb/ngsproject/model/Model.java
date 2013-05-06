@@ -1,6 +1,7 @@
 package com.github.lindenb.ngsproject.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -14,7 +15,12 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-public class Model {
+import net.sf.picard.reference.IndexedFastaSequenceFile;
+
+public class Model
+{
+private final Map<String,IndexedFastaSequenceFile>  path2reference=java.util.Collections.synchronizedMap(
+		new HashMap<String,IndexedFastaSequenceFile>());
 	
 
 private interface SQLRowExtractor<T>
@@ -30,6 +36,15 @@ private static final  SQLRowExtractor<String>  STRING_EXTRACTOR = new SQLRowExtr
 		}
 	};
 
+	
+	private static final  SQLRowExtractor<Long>  LONG_EXTRACTOR = new SQLRowExtractor<Long>()
+		{	
+		public Long extract(ResultSet row) throws SQLException
+			{
+			return row.getLong(1);
+			}
+		};	
+	
 	private Group publicGroup=new Group()
 		{
 		public long getId() {return 0L;};
@@ -193,10 +208,13 @@ protected class DefaultActiveRecord
 					{
 					return getString(this,"description");
 					}
-				if(methodName.equals("getPath"))
+				if( methodName.equals("getPath") ||
+					methodName.equals("getFile") ||
+					methodName.equals("getIndexedFastaSequenceFile"))
 					{
 					String path= getString(this,"path");
 					if( methodName.equals("getFile")) return new File(path);
+					if( methodName.equals("getIndexedFastaSequenceFile")) return Model.this.getIndexedFastaSequenceFileByPath(path);
 					return path;
 					}
 				break;
@@ -246,6 +264,11 @@ private String getString(DefaultActiveRecord record,String column)
 	return getObject(record,column,STRING_EXTRACTOR);
 	}
 
+private Long getLong(DefaultActiveRecord record,String column)
+	{
+	return getObject(record,column,LONG_EXTRACTOR);
+	}
+
 @SuppressWarnings("unchecked")
 private <T> T getObject(DefaultActiveRecord record,String column,SQLRowExtractor<T> extractor)
 	{
@@ -292,35 +315,9 @@ private <T extends ActiveRecord> T manyToOne(
 		long id
 		)
 	{
-	Connection con=null;
-	PreparedStatement pstmt=null;
-	ResultSet row=null;
-	
-	try{
-		String sql="select "+column+" from "+record.table.sqlTable()+" where id=?";
-		con=getDataSource().getConnection();
-		pstmt=con.prepareStatement(
-				sql
-				);
-		pstmt.setLong(1, id);
-		row=pstmt.executeQuery();
-		while(row.next())
-			{
-			return wrap(clazz,row.getLong(1));
-			}
-		return null;
-		}
-	catch(SQLException err)
-		{
-		err.printStackTrace(System.out);
-		throw new RuntimeException(err);
-		}
-	finally
-		{
-		if(row!=null) try {row.close();} catch(SQLException err) { }
-		if(pstmt!=null) try {pstmt.close();} catch(SQLException err) { }
-		if(con!=null) try {con.close();} catch(SQLException err) { }
-		}
+	Long fkey=getLong(record, column);
+	if(fkey==null) return null;
+	return wrap(clazz,fkey);
 	}
 
 
@@ -470,5 +467,42 @@ public List< Project> getAllProjects()
 	{
 	return getAllObjects(Project.class);
 	}
+/** Bam ******************************************************************************/
+public  Bam getBamById(long id)
+	{
+	return contains(Table.BAM,id)?wrap(Bam.class, id):null;
+	}
 
+
+
+public IndexedFastaSequenceFile getIndexedFastaSequenceFileByPath(String fastaPath)
+	{
+	try
+		{
+		synchronized (path2reference)
+			{
+			IndexedFastaSequenceFile reference=null;
+			reference=this.path2reference.get(fastaPath);
+			if(reference==null)
+				{
+				reference=new IndexedFastaSequenceFile(new File(fastaPath));
+				}
+			
+			path2reference.put(fastaPath, reference);
+			return reference;
+			}
+		}
+	catch (FileNotFoundException err)
+		{
+		throw new RuntimeException(err);
+		}
+	}
+
+public void dispose()
+	{
+	synchronized (path2reference)
+		{
+		path2reference.clear();
+		}
+	}
 }
