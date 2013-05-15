@@ -121,7 +121,13 @@ protected class DefaultActiveRecord
 					{
 					return getString(this,"name");
 					}
-				
+				if(methodName.equals("getBams"))
+					{
+					return manyToMany(Bam.class,
+							"select id from bam where sample_id=?",
+							this.id
+							);
+					}
 				break;
 				}
 			case USER:
@@ -191,7 +197,13 @@ protected class DefaultActiveRecord
 							this,Reference.class,"reference_id",id
 							);
 					}
-
+				if( methodName.equals("getProjects"))
+					{
+					return manyToMany(Project.class,
+							"select distinct project_id from PROJECT2BAM where bam_id=?",
+							this.id
+							);
+					}
 				break;
 				}
 			case PROJECT:
@@ -523,6 +535,10 @@ public Group getGroupByName(String s)
 	Long id=getIdByName(Table.GROUP,"name",s);
 	return id==null?null:wrap(Group.class, id);
 	}
+public Group getGroupById(long id)
+	{
+	return contains(Table.GROUP,id)?wrap( Group.class, id):null;
+	}
 
 /** SAMPLE ******************************************************************************/
 public Sample getSampleById(long id)
@@ -564,10 +580,20 @@ public  Project getProjectById(long id)
 	return contains(Table.PROJECT,id)?wrap(Project.class, id):null;
 	}
 
+public  Project getProjectByName(String s)
+	{
+	if(s==null || s.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.PROJECT,"name",s);
+	return id==null?null:wrap(Project.class, id);
+	}
+
+
 public List< Project> getAllProjects()
 	{
 	return getAllObjects(Project.class);
 	}
+
+
 
 /** get project visible by this user */
 public List< Project> getProjects(User user)
@@ -613,13 +639,41 @@ public List< Group> getAllGroups()
 	{
 	return getAllObjects(Group.class);
 	}
-	
+
+/** Reference ******************************************************************************/
+public  Reference getReferenceById(long id)
+	{
+	return contains(Table.REFERENCE,id)?wrap(Reference.class, id):null;
+	}
+
+public Reference getReferenceByName(String s)
+	{
+	if(s==null || s.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.REFERENCE,"name",s);
+	return id==null?null:wrap(Reference.class, id);
+	}
+public List< Reference> getAllReferences()
+	{
+	return getAllObjects(Reference.class);
+	}
+
 /** Bam ******************************************************************************/
 public  Bam getBamById(long id)
 	{
 	return contains(Table.BAM,id)?wrap(Bam.class, id):null;
 	}
 
+public  Bam getBamByPath(String path)
+	{
+	if(path==null || path.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.BAM,"path",path);
+	return id==null?null:wrap(Bam.class, id);
+	}
+
+public List< Bam> getAllBams()
+	{
+	return getAllObjects(Bam.class);
+	}
 
 
 public IndexedFastaSequenceFile getIndexedFastaSequenceFileByPath(String fastaPath)

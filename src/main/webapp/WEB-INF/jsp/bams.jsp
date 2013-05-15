@@ -28,7 +28,7 @@
 	<c:forEach var="i" items="${bams}">
 		<tr>
 			<td><c:out value="${i.path}" escapeXml="true"/></td>
-			<td><c:out value="${i.sample.name}" escapeXml="true"/></td>
+			<td><u:sample-href sample="${i.sample}"/></td>
 			<td><c:out value="${i.reference.name}" escapeXml="true"/></td>
 		</tr>
 	</c:forEach>

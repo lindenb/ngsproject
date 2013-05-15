@@ -6,7 +6,7 @@
 
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
-<title>Samples</title>
+<title>$#}</title>
 <u:head/>
 <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
@@ -25,7 +25,7 @@
 <tbody>
 	<c:forEach var="i" items="${samples}">
 		<tr>
-			<td><c:out value="${i.name}" escapeXml="true"/></td>
+			<td><u:sample-href sample="${i}"/></td>
 		</tr>
 	</c:forEach>
 </tbody>

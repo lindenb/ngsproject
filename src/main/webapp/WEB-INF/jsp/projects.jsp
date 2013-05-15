@@ -14,11 +14,6 @@
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
-<c:if test="${sessionScope.user.admin}">
- <a href="${pageContext.request.contextPath}/ngsprojects/admin/newproject" class="btn btn-primary">New Project</a>
-
-</c:if>
-
 <div class="box1"><h2>Projects</h2>
 <table>
 <thead>
@@ -30,7 +25,7 @@
 <tbody>
 	<c:forEach var="project" items="${projects}">
 		<tr>
-			<td><a href="${pageContext.request.contextPath}/ngsprojects/project/${project.id}"><c:out value="${project.name}" escapeXml="true"/></a></td>
+			<td><u:project-href project="${project}"/></td>
 			<td><c:out value="${project.description}" escapeXml="true"/></td>
 		</tr>
 	</c:forEach>

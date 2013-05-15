@@ -9,7 +9,7 @@ create table USERGROUP
 	is_public int not null default 0
 	);
 
-insert into USERGROUP(id,name) values(1,'public');
+insert into USERGROUP(name) values('public');
 	
 create table USERS
 	(
@@ -19,8 +19,8 @@ create table USERS
 	is_admin int not null default 0
 	);
 
-insert into USERS(id,name,sha1sum,is_admin) values(1,'root','dd94709528bb1c83d08f3088d4043f4742891f4f',1);
-insert into USERS(id,name,sha1sum,is_admin) values(2,'anonymous','da39a3ee5e6b4b0d3255bfef95601890afd80709',0);
+insert into USERS(name,sha1sum,is_admin) values('root','dd94709528bb1c83d08f3088d4043f4742891f4f',1);
+insert into USERS(name,sha1sum,is_admin) values('anonymous','da39a3ee5e6b4b0d3255bfef95601890afd80709',0);
 	
 	
 create table REFERENCE

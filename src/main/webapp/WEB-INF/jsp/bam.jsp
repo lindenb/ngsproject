@@ -4,9 +4,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="u" tagdir="/WEB-INF/tags" %>
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
+<%    pageContext.setAttribute("samflags", com.github.lindenb.ngsproject.SamFlag.values()); %>
 <head>
 <title><c:out value="${bam.name}" escapeXml="true"/></title>
 <u:head/>
+
+
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
@@ -14,7 +17,6 @@
 
 <h1><c:out value="${bam.name}" escapeXml="true"/></h1>
 
-<%    pageContext.setAttribute("samflags", com.github.lindenb.ngsproject.SamFlag.values()); %>
 
 <c:url value="/samtoolsview/project/${project.id}/bam/${bam.id}" var="url">
 </c:url>
@@ -22,7 +24,7 @@
 
 <form method="GET" action="<c:out value="${url}" escapeXml="true"/>" target="bamframe">
 <input type="hidden" name="bam-id" value="${bam.id}"/>
-<div class="row">
+<div class="row-fuild">
 <div class="span4">
  <fieldset>
  	<legend>Controls</legend>
@@ -46,7 +48,7 @@
  	<legend>Filtering flags</legend>
  	<c:forEach var="f" items="${samflags}">
  	 <label class="checkbox">
-		<input type="checkbox" name="filter" value="${f.flag}" />${f.label}
+		<input type="checkbox" name="filter" value="${f.flag}"  />${f.label}
 	</label>
 	</c:forEach>
  </fieldset>
@@ -57,7 +59,7 @@
  	<legend>Required flags</legend>
  	<c:forEach var="f" items="${samflags}">
  	 <label class="checkbox">
-		<input type="checkbox" name="require" value="${f.flag}" />${f.label}
+		<input type="checkbox" name="require" value="${f.flag}"  />${f.label}
 	</label>
 	</c:forEach>
  </fieldset>
@@ -68,6 +70,7 @@
 
 
 <div class="row-fluid">
+<div class="offset1 span10">
 <iframe
 	name="bamframe"
 	id="bamframe"
@@ -75,6 +78,7 @@
 	style="height:800px;"
 	src="<c:out value="${url}" escapeXml="true"/>?bam-id=${bam.id}">
 	</iframe> 
+</div>
 </div>
 
 </body>

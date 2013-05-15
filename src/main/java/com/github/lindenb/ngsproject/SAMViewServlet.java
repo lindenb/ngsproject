@@ -40,7 +40,7 @@ public class SAMViewServlet extends HttpServlet
 		boolean print_unmapped=false;
 		if(bam==null) throw new ServletException("undefined bam id:"+bam_id);
 		SAMSequenceInterval interval=null;
-		LocParser p;
+		
 		if((param=req.getParameter("interval"))!=null)
 			{
 			interval=LocParser.parseInterval(
@@ -59,18 +59,18 @@ public class SAMViewServlet extends HttpServlet
 			min_qual=Integer.parseInt(param);
 			}
 		int filter_flag=0;
-		if(req.getParameter("filter")!=null)
+		if(req.getParameter("filterflag")!=null)
 			{
-			for(String value:req.getParameterValues("filter"))
+			for(String value:req.getParameterValues("filterflag"))
 				{
 				filter_flag|=Integer.parseInt(value);
 				}
 			}
 		
 		int require_flag=0;
-		if(req.getParameter("require")!=null)
+		if(req.getParameter("requireflag")!=null)
 			{
-			for(String value:req.getParameterValues("require"))
+			for(String value:req.getParameterValues("requireflag"))
 				{
 				require_flag|=Integer.parseInt(value);
 				}

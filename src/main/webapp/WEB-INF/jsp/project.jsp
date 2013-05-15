@@ -26,16 +26,35 @@
 
 <p><c:out value="${project.description}" escapeXml="true"/></p>
 
+<div>
+    <form class="form-search"
+    	action="${pageContext.request.contextPath}/ngsprojects/project/${project.id}"
+    	method="GET" >
+    	<label class="control-label" for="pos">Jump to</label>
+	    	<input type="text"
+	    		placeholder="chrom:pos"
+	    		name="pos"
+	    		class="input-medium search-query"
+	    		value="<c:out value="${param.pos}" escapeXml="true"/>"
+	    		/>
+	   	<button type="submit" class="btn btn-primary">Go</button>
+    </form>
+</div>
+
+
 	<c:forEach var="bam" items="${project.bams}">
 	<div>
 		<a name="bam${bam.id}"/>
 		<div><c:forEach var="bam2" items="${project.bams}"> <a href="#bam${bam2.id}">[<c:out value="${bam2.name}" escapeXml="true"/>]</a> </c:forEach></div>
+		
 		<h3><c:out value="${bam.name}" escapeXml="true"/></h3>
-		<div><u:bam-href project="${project}" bam="${bam}"/></div>
+		<div>Sample: <u:sample-href sample="${bam.sample}" /></div>
+		<div><u:bam-href project="${project}" bam="${bam}" interval="${param.pos}"/></div>
+		
 		<div>
 		<c:forTokens items="${stylenames}" delims="," var="csssel">
-		<a href="#" onclick="NGSProject.switch_style('${csssel}');return false;"> [${csssel}] </a>
-		</c:forTokens>
+		  <a href="#" onclick="NGSProject.switch_style('${csssel}');return false;"> [${csssel}] </a>
+		  </c:forTokens>
 		</div>
 		
 		<u:tview bam="${bam}" pos="${pos}"/>
