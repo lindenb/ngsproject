@@ -23,3 +23,28 @@ body 	{
 	background-color:black;
 	color: white;
 	}
+
+.msg	{
+	border: 1px solid lightgray;
+	}
+
+.msgok	{
+	background-color:green;
+	color: black;
+	}
+.msgerror	{
+	background-color:red;
+	color: white;
+	}
+
+.msgwarning	{
+	background-color:orange;
+	color: black;
+	}
+
+.msgwarning	{
+	background-color:black;
+	color: white;
+	}
+
+

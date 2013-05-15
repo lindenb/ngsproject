@@ -18,7 +18,7 @@
 
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
-
+<jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
 <div class="box1">
 <h1><c:out value="${project.name}" escapeXml="true"/></h1>

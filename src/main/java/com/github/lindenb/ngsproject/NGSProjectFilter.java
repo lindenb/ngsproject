@@ -8,7 +8,10 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import com.github.lindenb.ngsproject.model.Model;
 
 public class NGSProjectFilter implements Filter
 	{
@@ -29,6 +32,7 @@ public class NGSProjectFilter implements Filter
 			{
 			res.setCharacterEncoding(enc);
 			}
+		/** redirect to error on init-context error */
 		Object err;
 		if((err=this.cfg.getServletContext().getAttribute("init.error"))!=null)
 			{
@@ -42,7 +46,20 @@ public class NGSProjectFilter implements Filter
 	        	forward(req, res);
 	        return;
 			}
-
+		/** create user session */
+		if(req instanceof HttpServletRequest)
+			{
+			Model model=(Model)req.getServletContext().getAttribute("model");
+			if(model==null) throw new ServletException("model is null");
+			UserPref currentUser=null;
+			HttpSession session=HttpServletRequest.class.cast(req).getSession(true);
+			currentUser=(UserPref)session.getAttribute("user");
+			if(currentUser==null)
+				{
+				currentUser=new UserPref();
+				session.setAttribute("user", currentUser);
+				}
+			}
 		chain.doFilter(req, res);
 		}
 

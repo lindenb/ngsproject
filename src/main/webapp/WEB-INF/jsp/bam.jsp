@@ -10,6 +10,8 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
+<jsp:include page="/WEB-INF/jsp/messages.jsp"/>
+
 <h1><c:out value="${bam.name}" escapeXml="true"/></h1>
 
 <%    pageContext.setAttribute("samflags", com.github.lindenb.ngsproject.SamFlag.values()); %>

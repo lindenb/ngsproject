@@ -45,10 +45,20 @@ private static final  SQLRowExtractor<String>  STRING_EXTRACTOR = new SQLRowExtr
 			}
 		};	
 	
+	private static final  SQLRowExtractor<Integer>  INT_EXTRACTOR = new SQLRowExtractor<Integer>()
+		{	
+		public Integer extract(ResultSet row) throws SQLException
+			{
+			return row.getInt(1);
+			}
+		};	
+		
+		
 	private Group publicGroup=new Group()
 		{
 		public long getId() {return 0L;};
 		public String getName() {return "public";};
+		public boolean isPublic() {return true;};
 		public Model getModel() {return Model.this;};
 		@Override
 		public List<User> getUsers() { return getModel().getAllUsers(); }
@@ -120,8 +130,17 @@ protected class DefaultActiveRecord
 					{
 					return getString(this,"name");
 					}
+				if(methodName.equals("getSha1Sum"))
+					{
+					return getString(this,"sha1sum");
+					}
+				if(methodName.equals("isAdmin"))
+					{
+					return getInt(this,"IS_ADMIN")==1;
+					}
 				if(methodName.equals("getGroups"))
 					{
+					if(getInt(this,"IS_ADMIN")==1) return this.getModel().getAllGroups();
 					return manyToMany(Group.class,
 							"select distinct group_id from user2group where user_id=?",
 							this.id
@@ -141,6 +160,10 @@ protected class DefaultActiveRecord
 							"select distinct user_id from user2group where group_id=?",
 							this.id
 							);
+					}
+				if(methodName.equals("isPublic"))
+					{
+					return getInt(this,"IS_PUBLIC")==1;
 					}
 				break;
 				}
@@ -206,6 +229,7 @@ protected class DefaultActiveRecord
 							this,Group.class,"group_id",id
 							);
 					if(g==null || g.getId()<=0) return publicGroup;
+					return g;
 					}
 				
 				break;
@@ -280,10 +304,17 @@ private String getString(DefaultActiveRecord record,String column)
 	return getObject(record,column,STRING_EXTRACTOR);
 	}
 
+
 private Long getLong(DefaultActiveRecord record,String column)
 	{
 	return getObject(record,column,LONG_EXTRACTOR);
 	}
+
+private Integer getInt(DefaultActiveRecord record,String column)
+	{
+	return getObject(record,column,INT_EXTRACTOR);
+	}
+
 
 @SuppressWarnings("unchecked")
 private <T> T getObject(DefaultActiveRecord record,String column,SQLRowExtractor<T> extractor)
@@ -453,11 +484,59 @@ private boolean contains(Table table,long id)
 		}
 	}
 
+private Long getIdByName(Table table,String column,String id)
+	{
+	if(id==null || id.isEmpty()) return null;
+	Connection con=null;
+	PreparedStatement pstmt=null;
+	ResultSet row=null;
+	
+	try{
+		con=getDataSource().getConnection();
+		pstmt=con.prepareStatement(
+				"select id from "+ table.sqlTable()+" where "+column+"=?");
+		pstmt.setString(1, id);
+		row=pstmt.executeQuery();
+		while(row.next())
+			{
+			return row.getLong(1);
+			}
+		return null;
+		}
+	catch(SQLException err)
+		{
+		throw new RuntimeException(err);
+		}
+	finally
+		{
+		if(row!=null) try {row.close();} catch(SQLException err) { }
+		if(pstmt!=null) try {pstmt.close();} catch(SQLException err) { }
+		if(con!=null) try {con.close();} catch(SQLException err) { }
+		}
+	}
+
+
+/** GROUP ******************************************************************************/
+public Group getGroupByName(String s)
+	{
+	if(s==null || s.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.GROUP,"name",s);
+	return id==null?null:wrap(Group.class, id);
+	}
+
 /** SAMPLE ******************************************************************************/
 public Sample getSampleById(long id)
 	{
 	return contains(Table.SAMPLE,id)?wrap(Sample.class, id):null;
 	}
+
+public Sample getSampleByName(String s)
+	{
+	if(s==null || s.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.SAMPLE,"name",s);
+	return id==null?null:wrap(Sample.class, id);
+	}
+
 
 public List<Sample> getAllSamples()
 	{
@@ -467,6 +546,12 @@ public List<Sample> getAllSamples()
 public User getUserById(long id)
 	{
 	return contains(Table.USER,id)?wrap(User.class, id):null;
+	}
+public User getUserByName(String s)
+	{
+	if(s==null || s.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.USER,"name",s);
+	return id==null?null:wrap(User.class, id);
 	}
 
 public List<User> getAllUsers()
@@ -483,6 +568,52 @@ public List< Project> getAllProjects()
 	{
 	return getAllObjects(Project.class);
 	}
+
+/** get project visible by this user */
+public List< Project> getProjects(User user)
+	{
+	
+	if(user!=null && user.isAdmin())
+		{
+		return getAllProjects();
+		}
+
+	List<Project> ret=new ArrayList<Project>();
+	List<Group> groups=null;
+	if(user!=null)
+			{
+			groups=user.getGroups();
+			}
+	else
+			{
+			groups=new ArrayList<Group>();
+			}
+	for(Project prj:getAllProjects())
+		{
+		Group g=prj.getGroup();
+		if(g==null || g.isPublic())
+			{
+			ret.add(prj);
+			continue;
+			}
+		
+		for(Group g2:groups)
+			{
+			if(g==null || g.getId()==g2.getId())
+				{
+				ret.add(prj);
+				}
+			}
+		}
+	return ret;
+	}
+
+
+public List< Group> getAllGroups()
+	{
+	return getAllObjects(Group.class);
+	}
+	
 /** Bam ******************************************************************************/
 public  Bam getBamById(long id)
 	{

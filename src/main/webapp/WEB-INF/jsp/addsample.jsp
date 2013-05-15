@@ -6,7 +6,7 @@
 
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
-<title>Login</title>
+<title>Add Sample</title>
 <u:head/>
 <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
@@ -15,24 +15,18 @@
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
     <form class="form-horizontal"
-    	action="${pageContext.request.contextPath}/ngsprojects/validate"
+    	action="${pageContext.request.contextPath}/ngsprojects/admin/addsample"
     	method="POST" >
     <div class="control-group">
-    <label class="control-label" for="username">Login</label>
-    <div class="controls">
-    <input type="text" id="username" placeholder="login" name="username" value="<c:out value="${param.username}" escapeXml="true"/>"/>
-    </div>
-    </div>
-    <div class="control-group">
-    <label class="control-label" for="inputPassword">Password</label>
-    <div class="controls">
-    <input type="password" id="inputPassword" name="password" placeholder="Password"/>
-    </div>
+    	<label class="control-label" for="name">Name</label>
+	    <div class="controls">
+	    	<textarea placeholder="Sample Names" name="names"><c:out value="${param.name}" escapeXml="true"/></textarea>
+	    </div>
     </div>
     <div class="control-group">
-    <div class="controls">
-    <button type="submit" class="btn btn-primary">Sign in</button>
-    </div>
+	    <div class="controls">
+	   		<button type="submit" class="btn btn-primary">Create</button>
+	    </div>
     </div>
     </form>
     

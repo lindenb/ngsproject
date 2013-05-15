@@ -6,12 +6,18 @@
 
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
-<title>TabixViz</title>
+<title>Projects</title>
 <u:head/>
 <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
+<jsp:include page="/WEB-INF/jsp/messages.jsp"/>
+
+<c:if test="${sessionScope.user.admin}">
+ <a href="${pageContext.request.contextPath}/ngsprojects/admin/newproject" class="btn btn-primary">New Project</a>
+
+</c:if>
 
 <div class="box1"><h2>Projects</h2>
 <table>

@@ -6,4 +6,5 @@ public interface Group  extends ActiveRecord
 	{
 	public String getName();
 	public List<User> getUsers();
+	public boolean isPublic();
 	}
