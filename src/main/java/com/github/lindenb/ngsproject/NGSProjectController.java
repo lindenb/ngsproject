@@ -18,7 +18,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import com.github.lindenb.ngsproject.model.Bam;
 import com.github.lindenb.ngsproject.model.Group;
@@ -27,7 +26,12 @@ import com.github.lindenb.ngsproject.model.Project;
 import com.github.lindenb.ngsproject.model.Reference;
 import com.github.lindenb.ngsproject.model.Sample;
 import com.github.lindenb.ngsproject.model.User;
+import com.github.lindenb.ngsproject.model.VCF;
+import com.github.lindenb.vizbam.SAMSequenceInterval;
+import com.github.lindenb.vizbam.SAMSequencePosition;
+import com.github.lindenb.vizbam.locparser.LocParser;
 
+@SuppressWarnings("serial")
 public class NGSProjectController extends HttpServlet
 	{
 	private static final String PROJECT_FILE_PATH="project.file.path";
@@ -529,10 +533,25 @@ public class NGSProjectController extends HttpServlet
 			if(project==null) throw new ServletException("Cannot find project "+path[1]);
 			req.setAttribute("project",project);
 			dispathPath="/WEB-INF/jsp/project.jsp";
-			String pos=req.getParameter("pos");
-			if(pos==null) pos="";
-			req.setAttribute("pos",pos);
-
+			String posStr=req.getParameter("pos");
+			if(posStr==null) posStr="";
+			try
+				{
+				Reference reference=project.getReference();
+				if(reference!=null)
+					{
+					SAMSequencePosition pos=LocParser.parseOne(
+							reference.getIndexedFastaSequenceFile().getSequenceDictionary(),
+							posStr,
+							true
+							);
+					req.setAttribute("pos",pos);
+					}
+				}
+			catch(Exception err)
+				{
+				
+				}
 			
 			if(path.length>3 && path[2].equals("bam") &&  isULong(path[3]))
 				{
@@ -579,6 +598,42 @@ public class NGSProjectController extends HttpServlet
 			
 			dispathPath="/WEB-INF/jsp/sample.jsp";
 			req.setAttribute("sample", sample);
+			}
+		else if(path[0].equals("vcfs"))
+			{
+			dispathPath="/WEB-INF/jsp/vcfs.jsp";
+			req.setAttribute("vcfs", model.getAllVCFs());
+			}
+		else if(path[0].equals("vcf") && path.length>1 && isULong(path[1]))
+			{
+			VCF vcf=model.getVcfById(Long.parseLong(path[1]));
+			if(vcf==null)
+				{
+				if(vcf==null) throw new ServletException("Cannot find vcf "+path[1]);
+				}
+			
+			String intervalStr=req.getParameter("interval");
+			if(intervalStr==null) intervalStr="";
+			try
+				{
+				Reference reference=vcf.getReference();
+				if(reference!=null)
+					{
+					SAMSequenceInterval interval=LocParser.parseInterval(
+							reference.getIndexedFastaSequenceFile().getSequenceDictionary(),
+							intervalStr,
+							true
+							);
+					req.setAttribute("interval",interval);
+					}
+				}
+			catch(Exception err)
+				{
+				
+				}
+			
+			dispathPath="/WEB-INF/jsp/vcf.jsp";
+			req.setAttribute("vcf", vcf);
 			}
 		else
 			{

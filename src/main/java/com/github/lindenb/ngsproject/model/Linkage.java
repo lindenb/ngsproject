@@ -4,8 +4,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+package com.github.lindenb.ngsproject.model;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 
 public class Linkage {
 private List<Genotype> genotypes;
@@ -13,10 +28,16 @@ public Linkage(List<Genotype> genotypes)
 	{
 	this.genotypes=genotypes;
 	}
-
-public Set<Variation> getVariations()
+public boolean isEmpty()
 	{
-	Set<Variation> vars=new TreeSet<Variation>();
+	return this.genotypes.isEmpty();
+	}
+
+
+	
+public SortedSet<Variation> getVariations()
+	{
+	SortedSet<Variation> vars=new TreeSet<Variation>();
 	for(Genotype g:genotypes)
 		{
 		vars.add(g.getVariation());
@@ -24,9 +45,9 @@ public Set<Variation> getVariations()
 	return vars;
 	}
 
-public Set<String> getSamples()
+public SortedSet<Sample> getSamples()
 	{
-	Set<String> vars=new TreeSet<String>();
+	SortedSet<Sample> vars=new TreeSet<Sample>();
 	for(Genotype g:genotypes)
 		{
 		vars.add(g.getSample());
@@ -34,27 +55,16 @@ public Set<String> getSamples()
 	return vars;
 	}
 
-public Map<Variation,Map<String,Set<String>>> getAsMap()
+public Set<String> getGenotypes(Variation var,Sample sample)
 	{
-	Map<Variation,Map<String,Set<String>>> var2gen=new TreeMap<Variation, Map<String,Set<String>>>();
-	
+	Set<String> gens=new TreeSet<String>();
 	for(Genotype g:genotypes)
 		{
-		Map<String,Set<String>> sample2gen =var2gen.get(g.getVariation());
-		if(sample2gen==null)
-			{
-			sample2gen=new TreeMap<String, Set<String>>();
-			var2gen.put(g.getVariation(),sample2gen);
-			}
-		Set<String> gens=sample2gen.get(g.getSample());
-		if(gens==null)
-			{
-			gens=new HashSet<String>();
-			sample2gen.put(g.getSample(),gens);
-			}
+		if(!g.getVariation().equals(var)) continue;
+		if(!g.getSample().equals(sample)) continue;
 		gens.add(g.getValue());
 		}
-	return var2gen;
+	return gens;
 	}
 
 @Override

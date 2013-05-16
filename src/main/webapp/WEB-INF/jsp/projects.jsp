@@ -3,6 +3,7 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="u" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="ngs" uri="http://github.com/lindenb/ngsproject/tags"%>
 
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
@@ -23,7 +24,7 @@
 	</tr>
 	</thead>
 <tbody>
-	<c:forEach var="project" items="${projects}">
+	<c:forEach var="project" items="${ngs:filter(pageContext.request,projects)}">
 		<tr>
 			<td><u:project-href project="${project}"/></td>
 			<td><c:out value="${project.description}" escapeXml="true"/></td>

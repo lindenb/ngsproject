@@ -3,7 +3,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="u" tagdir="/WEB-INF/tags" %>
 <%@attribute name="bam" required="true" rtexprvalue="true" type="com.github.lindenb.ngsproject.model.Bam"%>
-<%@attribute name="pos" required="false" rtexprvalue="true" type="java.lang.String"%>
+<%@attribute name="pos" required="false" rtexprvalue="true" type="com.github.lindenb.vizbam.SAMSequencePosition"%>
 <div><pre class="align"><%
 
 com.github.lindenb.ngsproject.CallTview tview=new com.github.lindenb.ngsproject.CallTview();

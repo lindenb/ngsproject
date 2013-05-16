@@ -1,7 +1,9 @@
 package com.github.lindenb.ngsproject.model;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -12,10 +14,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import org.broad.tribble.readers.TabixReader;
+
+import net.sf.picard.io.IoUtil;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
+import net.sf.picard.util.Interval;
 
 public class Model
 {
@@ -62,6 +71,10 @@ private static final  SQLRowExtractor<String>  STRING_EXTRACTOR = new SQLRowExtr
 		public Model getModel() {return Model.this;};
 		@Override
 		public List<User> getUsers() { return getModel().getAllUsers(); }
+		@Override
+		public Table getTable() {
+				return Table.GROUP;
+				}
 		};
 		
 	
@@ -102,6 +115,10 @@ protected class DefaultActiveRecord
 		this.id=id;
 		}
 	
+	@Override
+	public Table getTable() {
+		return table;
+		}
 	
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
@@ -111,6 +128,7 @@ protected class DefaultActiveRecord
 		if(method.equals(GET_ID)) return this.id;
 		if(methodName.equals("hashCode")) return this.hashCode();
 		if(methodName.equals("equals")) return this.equals(args[0]);
+		if(methodName.equals("getTable")) return this.table;
 
 		if(method.equals(GET_MODEL)) return Model.this;
 		switch(this.table)
@@ -127,6 +145,28 @@ protected class DefaultActiveRecord
 							"select id from bam where sample_id=?",
 							this.id
 							);
+					}
+				if( methodName.equals("getVcfs"))
+					{
+					return manyToMany(
+						VCF.class,
+						"select distinct vcf_id from VCF2SAMPLE where sample_id=?",
+						this.id);
+					}
+				if( methodName.equals("getProjects"))
+					{
+					return manyToMany(
+							Project.class,
+							"select distinct T1.project_id from " +
+							"PROJECT2BAM as T1,BAM as T2 where " +
+							"T2.sample_id=? and T1.bam_id=T2.id",
+							this.id);
+					}
+				if( methodName.equals("compareTo"))
+					{
+					Sample me=(Sample)this;
+					Sample other=Sample.class.cast(args[0]);
+					return me.getName().compareTo(other.getName());
 					}
 				break;
 				}
@@ -206,6 +246,63 @@ protected class DefaultActiveRecord
 					}
 				break;
 				}
+			case VCF:
+				{
+				if( methodName.equals("getName") ||
+					methodName.equals("getPath") || 
+					methodName.equals("toString") ||  
+					methodName.equals("getFile") )
+					{
+					String path= getString(this,"path");
+					if( methodName.equals("getFile")) return new File(path);
+					if( methodName.equals("getName")) return new File(path).getName();
+					return path;
+					}
+				
+				if( methodName.equals("getDescription"))
+					{
+					return getString(this,"description");
+					}
+				if(methodName.equals("getReference"))
+					{
+					return manyToOne(
+							this,Reference.class,"reference_id",id
+							);
+					}
+				
+				if( methodName.equals("getSamples"))
+					{
+					return manyToMany(
+							Sample.class,
+							"select distinct sample_id from VCF2SAMPLE where vcf_id=?",
+							id
+							);
+					}
+				
+				if( methodName.equals("getProjects"))
+					{
+					return manyToMany(
+							Project.class,
+							"select distinct project_id from VCF2PROJECT where vcf_id=?",
+							this.id
+							);
+					}
+				if( methodName.equals("getGenotypes"))
+					{
+					return getLinkage((VCF)this,
+							(Interval)args[0],
+							((VCF)this).getSamples()
+							); 
+					}
+				if( methodName.equals("getVariations"))
+					{
+					return getVariations((VCF)this,
+							(Interval)args[0]
+							); 
+					}
+				break;
+				}
+
 			case PROJECT:
 				{
 				if(methodName.equals("getName") || methodName.equals("toString"))
@@ -235,6 +332,15 @@ protected class DefaultActiveRecord
 						}
 					return L;
 					}
+				
+				if( methodName.equals("getVcfs"))
+					{
+					return manyToMany(
+						VCF.class,
+						"select distinct vcf_id from VCF2PROJECT where project_id=?",
+						id);
+					}
+				
 				if(methodName.equals("getGroup"))
 					{
 					Group g= manyToOne(
@@ -242,6 +348,31 @@ protected class DefaultActiveRecord
 							);
 					if(g==null || g.getId()<=0) return publicGroup;
 					return g;
+					}
+				
+				if( methodName.equals("getSamples"))
+					{
+					return manyToMany(
+							Sample.class,
+							"select distinct T2.sample_id from " +
+							"PROJECT2BAM as T1,BAM as T2 where " +
+							"T1.project_id=? and T1.bam_id=T2.id",
+							this.id);
+					}
+				
+				if( methodName.equals("getGenotypes"))
+					{
+					return getLinkage((VCF)this,
+							(Interval)args[0],
+							((Project)this).getSamples()
+							); 
+					}
+
+				if( methodName.equals("getReference"))
+					{
+					List<Bam> bams=((Project)this).getBams();
+					if(bams.isEmpty()) return null;
+					return bams.get(0).getReference();
 					}
 				
 				break;
@@ -656,6 +787,156 @@ public List< Reference> getAllReferences()
 	{
 	return getAllObjects(Reference.class);
 	}
+/** VCF ******************************************************************************/
+public  VCF getVcfById(long id)
+	{
+	return contains(Table.VCF,id)?wrap( VCF.class, id):null;
+	}
+
+public  VCF getVcfByPath(String path)
+	{
+	if(path==null || path.trim().isEmpty()) return null;
+	Long id=getIdByName(Table.VCF,"path",path);
+	return id==null?null:wrap( VCF.class, id);
+	}
+
+public List< VCF> getAllVCFs()
+	{
+	return getAllObjects( VCF.class);
+	}
+
+private Linkage getLinkage
+		(
+		VCF vcf,
+		Interval interval,
+		List<Sample> samples
+		)
+	{
+	TabixReader tabixReader=null;
+	TabixReader.Iterator iter=null;
+	BufferedReader r=null;
+	try {
+		List<Genotype> genotypes=new ArrayList<Genotype>();
+		r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
+		String line;
+		
+		Pattern tab=Pattern.compile("[\t]");
+		Pattern colon=Pattern.compile("[\\:]");
+		Map<Sample,Integer> sample2columns=new HashMap<Sample, Integer>(samples.size());
+		while((line=r.readLine())!=null)
+			{
+			if(!line.startsWith("#")) return new Linkage(genotypes);
+			if(!line.startsWith("#CHROM\t")) continue;
+			String tokens[]=tab.split(line);
+			for(int i=9;i< tokens.length;++i)
+				{
+				for(Sample S:samples)
+					{
+					if(!tokens[i].equals(S.getName())) continue;
+					sample2columns.put(S, i);
+					}
+				}
+			break;
+			}
+		r.close();
+		r=null;
+		if(sample2columns.isEmpty()) return new Linkage(genotypes);
+		
+		tabixReader=new TabixReader(vcf.getPath());
+		iter=tabixReader.query(interval.getSequence()+":"+interval.getStart()+"-"+interval.getEnd());
+		while((line=iter.next())!=null)
+			{
+			String tokens[]=tab.split(line);
+			if(tokens.length<9) continue;
+			Variation variation=new Variation(
+					tokens[0],
+					Integer.parseInt(tokens[1]), 
+					(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
+					tokens[3].toUpperCase(),
+					tokens[4].toUpperCase()
+					);
+			String format[]=colon.split(tokens[8]);
+			int gt_column=-1;
+			for(int i=0;i< format.length;++i)
+				{
+				if(format[i].equals("GT"))
+					{
+					gt_column=i;
+					break;
+					}
+				}
+			for(Sample sample: sample2columns.keySet())
+				{
+				int column=sample2columns.get(sample);
+				if(column>=tokens.length) continue;
+				if(tokens[column].isEmpty() || tokens[column].equals(".")) continue;
+				format=colon.split(tokens[column]);
+				if(gt_column>=format.length)continue;
+				String genotype=tokens[gt_column];
+				if(genotype.isEmpty() ||genotype.equals(".")||genotype.equals("./.")) continue;
+				genotypes.add(new Genotype(variation, sample, genotype));
+				}
+			}
+		
+		return new Linkage(genotypes);
+		}
+	catch (Exception err)
+		{
+		throw new RuntimeException(err);
+		}
+	finally
+		{
+		if(r!=null) try { r.close();} catch(IOException err) {}
+		if(tabixReader!=null) tabixReader.close();
+		}
+	}
+
+
+private SortedSet<Variation> getVariations
+	(
+	VCF vcf,
+	Interval interval
+	)
+	{
+	TabixReader tabixReader=null;
+	TabixReader.Iterator iter=null;
+	try
+		{
+		SortedSet<Variation> vars=new TreeSet<Variation>();
+		String line;
+		
+		Pattern tab=Pattern.compile("[\t]");
+		
+		tabixReader=new TabixReader(vcf.getPath());
+		iter=tabixReader.query(interval.getSequence()+":"+interval.getStart()+"-"+interval.getEnd());
+		while((line=iter.next())!=null)
+			{
+			String tokens[]=tab.split(line);
+			if(tokens.length<9) continue;
+			Variation variation=new Variation(
+					tokens[0],
+					Integer.parseInt(tokens[1]), 
+					(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
+					tokens[3].toUpperCase(),
+					tokens[4].toUpperCase()
+					);
+			vars.add(variation);
+			}
+		
+		return vars;
+		}
+	catch (Exception err)
+		{
+		throw new RuntimeException(err);
+		}
+	finally
+		{
+		if(tabixReader!=null) tabixReader.close();
+		}
+	}
+
+
+
 
 /** Bam ******************************************************************************/
 public  Bam getBamById(long id)

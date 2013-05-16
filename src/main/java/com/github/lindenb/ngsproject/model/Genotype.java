@@ -3,10 +3,10 @@ package com.github.lindenb.ngsproject.model;
 public class Genotype
 	{
 	private Variation variation;
-	private String sample;
+	private Sample sample;
 	private String value;
 	
-	public Genotype(Variation variation, String sample, String value)
+	public Genotype(Variation variation, Sample sample, String value)
 		{
 		this.variation = variation;
 		this.sample = sample;
@@ -17,7 +17,7 @@ public class Genotype
 		return variation;
 	}
 
-	public String getSample() {
+	public Sample getSample() {
 		return sample;
 	}
 

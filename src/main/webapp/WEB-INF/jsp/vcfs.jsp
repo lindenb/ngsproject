@@ -7,7 +7,7 @@
 
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
-<title>Bams</title>
+<title>VCFs</title>
 <u:head/>
 <link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
@@ -15,22 +15,33 @@
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
-
-<div class="box1"><h2>Bams</h2>
+<div class="box1"><h2>VCFs</h2>
 <table>
 <thead>
 	<tr>
 		<th>Path</th>
-		<th>Sample</th>
+		<th>Description</th>
 		<th>Reference</th>
+		<th>Samples</th>
+		<th>Projects</th>
 	</tr>
 	</thead>
 <tbody>
-	<c:forEach var="i" items="${ngs:filter(pageContext.request,bams)}">
+	<c:forEach var="i" items="${ngs:filter(pageContext.request,vcfs)}">
 		<tr>
-			<td><c:out value="${i.path}" escapeXml="true"/></td>
-			<td><u:sample-href sample="${i.sample}"/></td>
-			<td><c:out value="${i.reference.name}" escapeXml="true"/></td>
+			<td><u:vcf-href vcf="${i}"/></td>
+			<td><c:out value="${i.description}" escapeXml="true"/></td>
+			<td><u:reference-href u:reference="${i.reference}"/></td>
+			<td>
+				<c:forEach var="j" items="${ngs:filter(pageContext.request,i.samples)}">
+					<u:sample-href sample="${j}"/>
+				</c:forEach>
+			</td>
+			<td>
+				<c:forEach var="j" items="${ngs:filter(pageContext.request,i.projects)}">
+					<u:project-href sample="${j}"/>
+				</c:forEach>
+			</td>
 		</tr>
 	</c:forEach>
 </tbody>

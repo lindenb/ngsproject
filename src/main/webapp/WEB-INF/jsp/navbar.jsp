@@ -22,6 +22,7 @@
 	          		<ul class="dropdown-menu">  
                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/projects">Projects</a></li>
                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/references">References</a></li>
+                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/vcfs">VCF</a></li>
                     	<c:if test="${sessionScope.user.admin}">
                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/samples">Samples</a></li>
                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/bams">Bams</a></li>

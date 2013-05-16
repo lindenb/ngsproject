@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+    <description>A tag library for NGS Project</description>
+    <tlib-version>1.0</tlib-version>
+    <short-name>ngs</short-name>
+    <uri>http://github.com/lindenb/ngsproject/tags</uri>
+    <function>
+        <description>filter a list of active records ?</description>
+        <name>filter</name>
+        <function-class>com.github.lindenb.ngsproject.Functions</function-class>
+        <function-signature>java.lang.Collection filter( javax.servlet.http.HttpServletRequest,java.util.Collection)</function-signature>
+    </function>
+    <function>
+        <description>Is this item visible ?</description>
+        <name>visible</name>
+        <function-class>com.github.lindenb.ngsproject.Functions</function-class>
+        <function-signature>java.lang.Boolean visible( javax.servlet.http.HttpServletRequest,com.github.lindenb.ngsproject.model.ActiveRecord)</function-signature>
+    </function>
+
+</taglib>

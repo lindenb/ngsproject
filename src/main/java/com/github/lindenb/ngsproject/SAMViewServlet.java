@@ -25,8 +25,6 @@ import com.github.lindenb.vizbam.locparser.LocParser;
 @SuppressWarnings("serial")
 public class SAMViewServlet extends HttpServlet
 	{
-	
-	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException
@@ -36,8 +34,11 @@ public class SAMViewServlet extends HttpServlet
 		String param=req.getParameter("bam-id");
 		if(param==null) throw new ServletException("bam-id missing");
 		long bam_id=Long.parseLong(param);
-		Bam bam=model.getBamById(bam_id);
+		
+		
 		boolean print_unmapped=false;
+		Bam bam=model.getBamById(bam_id);
+		if(!Functions.visible(req, bam)) bam=null;
 		if(bam==null) throw new ServletException("undefined bam id:"+bam_id);
 		SAMSequenceInterval interval=null;
 		

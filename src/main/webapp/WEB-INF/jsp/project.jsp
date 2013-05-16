@@ -1,6 +1,14 @@
+<%@page import="com.github.lindenb.ngsproject.model.Variation"%>
+<%@page import="net.sf.picard.util.Interval"%>
+<%@page import="com.github.lindenb.ngsproject.model.Linkage"%>
 <%@ page language="java"
 	contentType="application/xhtml+xml; charset=ISO-8859-1"
     pageEncoding="UTF-8"%>
+<%@page import="com.github.lindenb.ngsproject.model.Linkage"%>
+<%@page import="com.github.lindenb.ngsproject.model.Sample"%>
+<%@page import="com.github.lindenb.ngsproject.model.Project"%>
+<%@page import="com.github.lindenb.vizbam.SAMSequencePosition"%>
+<%@page import="net.sf.picard.util.Interval"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="u" tagdir="/WEB-INF/tags" %>
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
@@ -41,6 +49,46 @@
     </form>
 </div>
 
+<c:if test="${not empty pos }">
+<%
+
+SAMSequencePosition loc1=(SAMSequencePosition)request.getAttribute("pos");
+Project p1=(Project)request.getAttribute("project");
+Linkage l1 =p1.getGenotypes(new Interval(
+		loc1.getName(),
+		loc1.getPosition(),
+		loc1.getPosition()+80
+		));
+pageContext.setAttribute("linkage",l1);
+%>
+
+<table>
+	<tr>
+		<th>Sample</th>
+		<c:forEach var="i" items="${linkage.variations}">
+			<th>${i}</th>
+		</c:forEach>
+	</tr>
+	<c:forEach var="j" items="${linkage.samples}">
+		<th><u:sample-href="${j}"/></th>
+		<c:forEach var="i" items="${linkage.variations}">
+			<th>
+			<%
+			Sample S2=(Sample)pageContext.getAttribute("j");
+			Variation V2=(Variation)pageContext.getAttribute("j");
+			pageContext.setAttribute("genotypes", l1.getGenotypes(V2,S2));
+			%>
+			<c:forEach var="k" items="${genotypes}">
+			<c:out value="${k}" escapeXml="true"/>
+			</c:forEach>
+			</th>
+		</c:forEach>
+	</c:forEach>
+	
+	
+</table>
+
+</c:if>
 
 	<c:forEach var="bam" items="${project.bams}">
 	<div>

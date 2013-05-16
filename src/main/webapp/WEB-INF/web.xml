@@ -60,5 +60,19 @@
 	<url-pattern>/samtoolsview/*</url-pattern>
   </servlet-mapping>  
   
+
+  
+<servlet>
+	<servlet-name>vcfview</servlet-name>
+	<servlet-class>com.github.lindenb.ngsproject.VCFViewServlet</servlet-class>
+	<load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+	<servlet-name>vcfview</servlet-name>
+	<url-pattern>/vcfview/*</url-pattern>
+  </servlet-mapping>  
+
+
   
 </web-app>

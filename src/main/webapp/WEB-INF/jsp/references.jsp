@@ -27,7 +27,7 @@
 <tbody>
 	<c:forEach var="i" items="${references}">
 		<tr>
-			<td><c:out value="${i.name}" escapeXml="true"/></td>
+			<td><u:reference-href reference="${i}"/></td>
 			<td><c:out value="${i.description}" escapeXml="true"/></td>
 			<td><c:out value="${i.path}" escapeXml="true"/></td>
 		</tr>
