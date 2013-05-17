@@ -635,6 +635,12 @@ public class NGSProjectController extends HttpServlet
 			dispathPath="/WEB-INF/jsp/vcf.jsp";
 			req.setAttribute("vcf", vcf);
 			}
+		else if(path[0].equals("search"))
+			{
+			req.setAttribute("vcfs", model.getAllVCFs());
+			req.setAttribute("references", model.getAllReferences());
+			dispathPath="/WEB-INF/jsp/search.jsp";
+			}
 		else
 			{
 			

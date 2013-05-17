@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import com.github.lindenb.ngsproject.model.ActiveRecord;
 import com.github.lindenb.ngsproject.model.Bam;
@@ -39,7 +40,10 @@ public class Functions
 			)
 		{
 		if(rec==null) return false;
-		UserPref user=(UserPref)req.getAttribute("user");
+		HttpSession session=req.getSession(false);
+		if(session==null) return false;
+		UserPref user=(UserPref)session.getAttribute("user");
+		if(user==null) return false;
 		if(user.isAdmin()) return true;
 		switch(rec.getTable())
 			{

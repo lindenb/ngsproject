@@ -7,6 +7,38 @@
     <tlib-version>1.0</tlib-version>
     <short-name>ngs</short-name>
     <uri>http://github.com/lindenb/ngsproject/tags</uri>
+    
+    <tag>
+    	<name>viewvcf</name>
+    	<tag-class>com.github.lindenb.ngsproject.VCFViewTag</tag-class> 
+    	 <body-content>empty</body-content> 
+    	<attribute>
+    		<name>vcf</name>
+    		<required>true</required>
+    		<rtexprvalue>true</rtexprvalue>
+    	</attribute>
+    	<attribute>
+    		<name>limit</name>
+    		<required>false</required>
+    		<rtexprvalue>true</rtexprvalue>
+    	</attribute>
+     	<attribute>
+    		<name>interval</name>
+    		<required>true</required>
+    		<rtexprvalue>true</rtexprvalue>
+    	</attribute>
+     	<attribute>
+    		<name>meta</name>
+    		<required>false</required>
+    		<rtexprvalue>true</rtexprvalue>
+    	</attribute>
+     	<attribute>
+    		<name>escapeXml</name>
+    		<required>false</required>
+    		<rtexprvalue>true</rtexprvalue>
+    	</attribute>
+    </tag>
+    
     <function>
         <description>filter a list of active records ?</description>
         <name>filter</name>
