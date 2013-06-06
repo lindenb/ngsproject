@@ -40,7 +40,7 @@
 			</td>
 			<td>
 				<c:forEach var="j" items="${ngs:filter(pageContext.request,i.projects)}">
-					<u:project-href sample="${j}"/>
+					<u:project-href project="${j}"/>
 				</c:forEach>
 			</td>
 		</tr>

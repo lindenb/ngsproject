@@ -584,6 +584,7 @@ private static Table class2table(Class<? extends ActiveRecord> C)
 	if(C==Group.class) return Table.GROUP;
 	if(C==Reference.class) return Table.REFERENCE;
 	if(C==Project.class) return Table.PROJECT;
+	if(C==VCF.class) return Table.VCF;
 	throw new IllegalArgumentException(String.valueOf(C));
 	}
 

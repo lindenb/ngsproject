@@ -12,6 +12,8 @@
 		<fileset  dir="${picard.dir}">
 	        <include name="picard-${picard.version}.jar"/>
 			<include name="sam-${picard.version}.jar"/>
+			<include name="tribble-${picard.version}.jar"/>
+			<include name="variant-${picard.version}.jar"/>
 		</fileset>
 	</path>
 		
@@ -23,6 +25,7 @@
 		
 	<path id="servlet.jars">
 		<path location="${glassfish.dir}/glassfish/modules/javax.servlet-api.jar"/>
+		<path location="${glassfish.dir}/glassfish/modules/javax.servlet.jsp-api.jar"/>
 	</path>
 	
         
@@ -76,7 +79,8 @@
 					<include name="**/*.jsp"/>
 					<include name="**/*.css"/>
 					<include name="**/*.tag"/>
-					<include name="**/*.js"/>
+				<include name="**/*.js"/>
+				<include name="**/*.tld"/>
 			</fileset>
 				
 		   

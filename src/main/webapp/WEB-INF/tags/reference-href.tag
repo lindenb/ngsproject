@@ -4,7 +4,7 @@
 <c:choose>
 <c:when test="${empty reference }">N/A</c:when>
 <c:otherwise>
-<c:url value="/ngsprojects/reference/${vcf.id}" var="url">
+<c:url value="/ngsprojects/reference/${reference.id}" var="url">
 </c:url>
 <a href="<c:out value="${url}" escapeXml="true"/>"><c:out value="${reference.name}" escapeXml="true"/></a>
 </c:otherwise>
