@@ -11,7 +11,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import com.github.lindenb.ngsproject.model.Model;
+
+import com.github.lindenb.ngsproject.model.ModelI;
 
 public class NGSProjectFilter implements Filter
 	{
@@ -49,7 +50,7 @@ public class NGSProjectFilter implements Filter
 		/** create user session */
 		if(req instanceof HttpServletRequest)
 			{
-			Model model=(Model)req.getServletContext().getAttribute("model");
+			ModelI model=(ModelI)req.getServletContext().getAttribute("model");
 			if(model==null) throw new ServletException("model is null");
 			UserPref currentUser=null;
 			HttpSession session=HttpServletRequest.class.cast(req).getSession(true);

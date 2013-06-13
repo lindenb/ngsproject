@@ -9,7 +9,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
+import com.github.lindenb.ngsproject.model.DefaultModel;
 import com.github.lindenb.ngsproject.model.Model;
+import com.github.lindenb.ngsproject.model.ModelI;
 import com.github.lindenb.ngsproject.model.sql.SimpleDataSource;
 
 public class NGProjectCtxListener implements ServletContextListener
@@ -55,7 +57,7 @@ public class NGProjectCtxListener implements ServletContextListener
 				ds.setDefaultSchema("NGSPROJECTS");
 				Connection con=ds.getConnection();
 				con.close();
-				Model model=new Model(ds);
+				Model model=new DefaultModel(ds);
 				
 				ctx.getServletContext().setAttribute("datasource", ds);
 				ctx.getServletContext().setAttribute("model", model);

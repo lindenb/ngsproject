@@ -15,7 +15,7 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 import org.broad.tribble.readers.TabixReader;
 
 import net.sf.picard.io.IoUtil;
-import com.github.lindenb.ngsproject.model.Model;
+import com.github.lindenb.ngsproject.model.DefaultModel;
 import com.github.lindenb.ngsproject.model.VCF;
 import com.github.lindenb.vizbam.SAMSequenceInterval;
 import com.github.lindenb.vizbam.locparser.LocParser;

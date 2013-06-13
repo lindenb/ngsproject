@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.broad.tribble.readers.TabixReader;
 
 import net.sf.picard.io.IoUtil;
+
 import com.github.lindenb.ngsproject.model.Model;
 import com.github.lindenb.ngsproject.model.VCF;
 import com.github.lindenb.vizbam.SAMSequenceInterval;
