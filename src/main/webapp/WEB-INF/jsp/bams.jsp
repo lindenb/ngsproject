@@ -28,7 +28,7 @@
 <tbody>
 	<c:forEach var="i" items="${ngs:filter(pageContext.request,bams)}">
 		<tr>
-			<td><u:bam-ref bam="${i}"/></td>
+			<td><u:bam-href bam="${i}"/></td>
 			<td><u:sample-href sample="${i.sample}"/></td>
 			<td><c:out value="${i.reference.name}" escapeXml="true"/></td>
 		</tr>
