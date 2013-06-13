@@ -50,89 +50,127 @@ public class VCFViewServlet extends HttpServlet
 		{
 		Model model=(Model)req.getServletContext().getAttribute("model");
 		if(model==null) throw new ServletException("model is null");
-		String param=req.getParameter("vcf-id");
+		
+		
+		boolean showVCFHeader=false;
+		String param=req.getParameter("headeron");
+		if("true".equals(param)) showVCFHeader=true;
+				
+		param=req.getParameter("vcf-id");
 		if(param==null) throw new ServletException("vcf-id missing");
-		long vcf_id=Long.parseLong(param);
-		VCF vcf=model.getVcfById(vcf_id);
-		if(!Functions.visible(req, vcf)) vcf=null;
-		if(vcf==null) throw new ServletException("undefined bam id:"+vcf_id);
-		SAMSequenceInterval interval=null;
+		int status=HttpServletResponse.SC_OK;
+		String statusString="";
 		
-		if((param=req.getParameter("interval"))!=null)
-			{
-			interval=LocParser.parseInterval(
-					vcf.getReference().getIndexedFastaSequenceFile().getSequenceDictionary(),
-					param, true);
-			}
-		
-		
-		PrintWriter w=resp.getWriter();
-		BufferedReader r=null;
-		TabixReader tabix=null;
-		long limit=1000L;
+		long vcf_id=-1L;
 		try
 			{
-			r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
-			String line;
-			Set<Integer> visible_columns=new HashSet<Integer>();
-			Pattern tab=Pattern.compile("[\t]");
-			resp.setContentType("text/plain");
-			while((line=r.readLine())!=null)
+			vcf_id=Long.parseLong(param);
+			}
+		catch(NumberFormatException err)
+			{
+			vcf_id=-1L;
+			}
+
+		VCF vcf=model.getVcfById(vcf_id);
+		if(vcf==null)
+			{
+			statusString="Cannot find VCF-ID="+param;
+			status=HttpServletResponse.SC_NOT_FOUND;
+			}
+		if(!Functions.visible(req, vcf))
+			{
+			statusString="You are not allowed to see the non-public VCF-ID="+vcf_id+". Are you logged ?";
+			status=HttpServletResponse.SC_FORBIDDEN;
+			vcf=null;
+			}
+		
+		PrintWriter w=resp.getWriter();
+
+		if(vcf==null)
+			{
+			resp.sendError( status,statusString);
+			}
+		else
+			{
+			SAMSequenceInterval interval=null;
+			
+			if((param=req.getParameter("interval"))!=null)
 				{
-				if(line.isEmpty()) continue;
-				if(!line.startsWith("#")) break;
-				w.println(line);
-				if(line.startsWith("#CHROM"))
-					{
-					String tokens[]=tab.split(line);
-					for(int i=9;i< tokens.length;++i)
-						{
-						if(Functions.visible(req, model.getSampleByName(tokens[i])))
-							{
-							visible_columns.add(i);
-							}
-						}
-					print(tab,w,line,visible_columns);
-					break;
-					}
+				interval=LocParser.parseInterval(
+						vcf.getReference().getIndexedFastaSequenceFile().getSequenceDictionary(),
+						param, true);
 				}
 			
-			if(interval==null)
+			
+			BufferedReader r=null;
+			TabixReader tabix=null;
+			long limit=1000L;
+			try
 				{
-				while((line=r.readLine())!=null && limit>0L)
+				r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
+				String line;
+				Set<Integer> visible_columns=new HashSet<Integer>();
+				Pattern tab=Pattern.compile("[\t]");
+				resp.setContentType("text/plain");
+				while((line=r.readLine())!=null)
 					{
-					--limit;
-					print(tab,w,line,visible_columns);
+					if(line.isEmpty()) continue;
+					if(!line.startsWith("#")) break;
+					
+					if(line.startsWith("#CHROM"))
+						{
+						String tokens[]=tab.split(line);
+						for(int i=9;i< tokens.length;++i)
+							{
+							if(Functions.visible(req, model.getSampleByName(tokens[i])))
+								{
+								visible_columns.add(i);
+								}
+							}
+						print(tab,w,line,visible_columns);
+						break;
+						}
+					if(showVCFHeader)  w.println(line);
 					}
-				r.close();
-				r=null;
+				
+				if(interval==null)
+					{
+					while((line=r.readLine())!=null && limit>0L)
+						{
+						--limit;
+						print(tab,w,line,visible_columns);
+						}
+					r.close();
+					r=null;
+					}
+				else
+					{
+					r.close();
+					r=null;
+					tabix=new TabixReader(vcf.getPath());
+					TabixReader.Iterator iter=tabix.query(
+							interval.getName()+":"+interval.getStart()+"-"+interval.getEnd());
+					while(iter!=null && (line=iter.next())!=null && limit>0L)
+						{
+						--limit;
+						print(tab,w,line,visible_columns);
+						}
+					tabix.close();
+					tabix=null;
+					}
 				}
-			else
+			catch(Exception err)
 				{
-				r.close();
-				r=null;
-				tabix=new TabixReader(vcf.getPath());
-				TabixReader.Iterator iter=tabix.query(
-						interval.getName()+":"+interval.getStart()+"-"+interval.getEnd());
-				while((line=iter.next())!=null && limit>0L)
-					{
-					--limit;
-					print(tab,w,line,visible_columns);
-					}
-				tabix.close();
-				tabix=null;
+				err.printStackTrace(w);
+				throw new IOException(err);
+				}
+			finally
+				{
+				if(tabix!=null) try { tabix.close();} catch(Exception err){}
 				}
 			}
-		catch(Exception err)
-			{
-			throw new IOException(err);
-			}
-		finally
-			{
-			if(w!=null) try { w.flush();} catch(Exception err){}
-			if(w!=null) try { w.close();} catch(Exception err){}
-			if(tabix!=null) try { tabix.close();} catch(Exception err){}
-			}
+		if(w!=null) try { w.flush();} catch(Exception err){}
+		if(w!=null) try { w.close();} catch(Exception err){}
 		}
 	
 	@Override

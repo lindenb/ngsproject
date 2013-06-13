@@ -534,7 +534,10 @@ public class NGSProjectController extends HttpServlet
 			req.setAttribute("project",project);
 			dispathPath="/WEB-INF/jsp/project.jsp";
 			String posStr=req.getParameter("pos");
-			if(posStr==null) posStr="";
+			if(posStr==null)
+				{
+				posStr="";
+				}
 			try
 				{
 				Reference reference=project.getReference();
@@ -550,7 +553,7 @@ public class NGSProjectController extends HttpServlet
 				}
 			catch(Exception err)
 				{
-				
+				messages.add(new Message(err));
 				}
 			
 			if(path.length>3 && path[2].equals("bam") &&  isULong(path[3]))

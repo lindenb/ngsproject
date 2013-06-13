@@ -70,7 +70,7 @@ pageContext.setAttribute("linkage",l1);
 		</c:forEach>
 	</tr>
 	<c:forEach var="j" items="${linkage.samples}">
-		<th><u:sample-href="${j}"/></th>
+		<th><u:sample-href sample="${j}"/></th>
 		<c:forEach var="i" items="${linkage.variations}">
 			<th>
 			<%

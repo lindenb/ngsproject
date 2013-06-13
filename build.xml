@@ -72,6 +72,9 @@
 		<war destfile="dist/ngsproject.war" webxml="./src/main/webapp/WEB-INF/web.xml">
 			<lib file="${picard.dir}/picard-${picard.version}.jar"/>
 			<lib file="${picard.dir}/sam-${picard.version}.jar"/>
+			<lib file="${picard.dir}/tribble-${picard.version}.jar"/>
+			<lib file="${picard.dir}/variant-${picard.version}.jar"/>
+
 			<lib file="${vizbam}"/>
 			
 			<classes dir="tmp"/>

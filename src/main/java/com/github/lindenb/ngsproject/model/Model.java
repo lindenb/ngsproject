@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -289,7 +291,8 @@ protected class DefaultActiveRecord
 					}
 				if( methodName.equals("getGenotypes"))
 					{
-					return getLinkage((VCF)this,
+					return getLinkage(
+							Collections.singleton((VCF)this),
 							(Interval)args[0],
 							((VCF)this).getSamples()
 							); 
@@ -362,15 +365,28 @@ protected class DefaultActiveRecord
 				
 				if( methodName.equals("getGenotypes"))
 					{
-					return getLinkage((VCF)this,
+					List<VCF> vcfs= (List<VCF>)this.invoke(this,
+							Project.class.getMethod("getVcfs"),
+							new Object[0]
+							);
+					List<Sample> samples= (List<Sample>)this.invoke(this,
+							Project.class.getMethod("getSamples"),
+							new Object[0]
+							);
+
+					return getLinkage(
+							vcfs,
 							(Interval)args[0],
-							((Project)this).getSamples()
+							samples
 							); 
 					}
 
 				if( methodName.equals("getReference"))
 					{
-					List<Bam> bams=((Project)this).getBams();
+					List<Bam> bams=(List<Bam>)this.invoke(this,
+							Project.class.getMethod("getBams"),
+							new Object[0]
+							);
 					if(bams.isEmpty()) return null;
 					return bams.get(0).getReference();
 					}
@@ -808,88 +824,95 @@ public List< VCF> getAllVCFs()
 
 private Linkage getLinkage
 		(
-		VCF vcf,
+		Collection<VCF> vcfs,
 		Interval interval,
 		List<Sample> samples
 		)
 	{
-	TabixReader tabixReader=null;
-	TabixReader.Iterator iter=null;
-	BufferedReader r=null;
-	try {
-		List<Genotype> genotypes=new ArrayList<Genotype>();
-		r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
-		String line;
-		
-		Pattern tab=Pattern.compile("[\t]");
-		Pattern colon=Pattern.compile("[\\:]");
-		Map<Sample,Integer> sample2columns=new HashMap<Sample, Integer>(samples.size());
-		while((line=r.readLine())!=null)
-			{
-			if(!line.startsWith("#")) return new Linkage(genotypes);
-			if(!line.startsWith("#CHROM\t")) continue;
-			String tokens[]=tab.split(line);
-			for(int i=9;i< tokens.length;++i)
+	List<Genotype> genotypes=new ArrayList<Genotype>();
+	if(1<2) return new Linkage(genotypes);
+	for(VCF vcf:vcfs)
+		{
+	
+		TabixReader tabixReader=null;
+		TabixReader.Iterator iter=null;
+		BufferedReader r=null;
+		try {
+			
+			r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
+			String line;
+			
+			Pattern tab=Pattern.compile("[\t]");
+			Pattern colon=Pattern.compile("[\\:]");
+			Map<Sample,Integer> sample2columns=new HashMap<Sample, Integer>(samples.size());
+			while((line=r.readLine())!=null)
 				{
-				for(Sample S:samples)
+				if(!line.startsWith("#")) return new Linkage(genotypes);
+				if(!line.startsWith("#CHROM\t")) continue;
+				String tokens[]=tab.split(line);
+				for(int i=9;i< tokens.length;++i)
 					{
-					if(!tokens[i].equals(S.getName())) continue;
-					sample2columns.put(S, i);
+					for(Sample S:samples)
+						{
+						if(!tokens[i].equals(S.getName())) continue;
+						sample2columns.put(S, i);
+						}
+					}
+				break;
+				}
+			r.close();
+			r=null;
+			if(sample2columns.isEmpty()) return new Linkage(genotypes);
+			
+			tabixReader=new TabixReader(vcf.getPath());
+			iter=tabixReader.query(interval.getSequence()+":"+interval.getStart()+"-"+interval.getEnd());
+			while(iter!=null && (line=iter.next())!=null)
+				{
+				String tokens[]=tab.split(line);
+				if(tokens.length<9) continue;
+				Variation variation=new Variation(
+						tokens[0],
+						Integer.parseInt(tokens[1]), 
+						(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
+						tokens[3].toUpperCase(),
+						tokens[4].toUpperCase()
+						);
+				String format[]=colon.split(tokens[8]);
+				int gt_column=-1;
+				for(int i=0;i< format.length;++i)
+					{
+					if(format[i].equals("GT"))
+						{
+						gt_column=i;
+						break;
+						}
+					}
+				for(Sample sample: sample2columns.keySet())
+					{
+					int column=sample2columns.get(sample);
+					if(column>=tokens.length) continue;
+					if(tokens[column].isEmpty() || tokens[column].equals(".")) continue;
+					format=colon.split(tokens[column]);
+					if(gt_column>=format.length)continue;
+					String genotype=tokens[gt_column];
+					if(genotype.isEmpty() ||genotype.equals(".")||genotype.equals("./.")) continue;
+					genotypes.add(new Genotype(variation, sample, genotype));
 					}
 				}
-			break;
+			
+			
 			}
-		r.close();
-		r=null;
-		if(sample2columns.isEmpty()) return new Linkage(genotypes);
-		
-		tabixReader=new TabixReader(vcf.getPath());
-		iter=tabixReader.query(interval.getSequence()+":"+interval.getStart()+"-"+interval.getEnd());
-		while((line=iter.next())!=null)
+		catch (Exception err)
 			{
-			String tokens[]=tab.split(line);
-			if(tokens.length<9) continue;
-			Variation variation=new Variation(
-					tokens[0],
-					Integer.parseInt(tokens[1]), 
-					(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
-					tokens[3].toUpperCase(),
-					tokens[4].toUpperCase()
-					);
-			String format[]=colon.split(tokens[8]);
-			int gt_column=-1;
-			for(int i=0;i< format.length;++i)
-				{
-				if(format[i].equals("GT"))
-					{
-					gt_column=i;
-					break;
-					}
-				}
-			for(Sample sample: sample2columns.keySet())
-				{
-				int column=sample2columns.get(sample);
-				if(column>=tokens.length) continue;
-				if(tokens[column].isEmpty() || tokens[column].equals(".")) continue;
-				format=colon.split(tokens[column]);
-				if(gt_column>=format.length)continue;
-				String genotype=tokens[gt_column];
-				if(genotype.isEmpty() ||genotype.equals(".")||genotype.equals("./.")) continue;
-				genotypes.add(new Genotype(variation, sample, genotype));
-				}
+			throw new RuntimeException(err);
 			}
-		
-		return new Linkage(genotypes);
+		finally
+			{
+			if(r!=null) try { r.close();} catch(IOException err) {}
+			if(tabixReader!=null) tabixReader.close();
+			}
 		}
-	catch (Exception err)
-		{
-		throw new RuntimeException(err);
-		}
-	finally
-		{
-		if(r!=null) try { r.close();} catch(IOException err) {}
-		if(tabixReader!=null) tabixReader.close();
-		}
+	return new Linkage(genotypes);
 	}
 
 

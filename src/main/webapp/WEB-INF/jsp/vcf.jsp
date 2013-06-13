@@ -48,7 +48,7 @@
 <tbody>
 	<c:forEach var="p" items="${ngs:filter(pageContext.request,vcf.samples)}">
 		<tr>
-			<td><u:sample-href project="${p}"/></td>
+			<td><u:sample-href sample="${p}"/></td>
 		</tr>
 	</c:forEach>
 </tbody>
@@ -63,7 +63,7 @@
     	method="GET"
     	 target="vcfframe"
     	>
-    	<input type="hidden" name="vcf-id" value="{vcf.id}"/>
+    	<input type="hidden" name="vcf-id" value="${vcf.id}"/>
     	<label class="control-label" for="pos">Jump to</label>
     	<input type="text"
     		placeholder="chrom:start-end"
@@ -71,6 +71,14 @@
     		class="input-medium search-query"
     		value="<c:out value="${param.interval}" escapeXml="true"/>"
     		/>
+    	<label class="control-label" for="headeron"><input
+    		id="headeron"
+    		type="checkbox"
+    		name="headeron"
+    		value="true"
+    		/>Show Headers</label>
+    		
+    		
 	   	<button type="submit" class="btn btn-primary">Go</button>
     </form>
 </div>
@@ -79,7 +87,7 @@
 <div class="offset1 span10">
 <iframe
 	name="vcfframe"
-	id="bamframe"
+	id="vcfframe"
 	class="container well well-small span12"
 	style="height:800px;"
 	src="${pageContext.request.contextPath}/vcfview?vcf-id=${vcf.id}">

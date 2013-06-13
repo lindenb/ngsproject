@@ -13,10 +13,13 @@ public class CallTview
 	
 	public void display(Writer out,Bam bam,com.github.lindenb.vizbam.SAMSequencePosition position)
 		{
-		if(position==null || bam==null) return;
+
+		
 		IndexedFastaSequenceFile reference=null;
 		try
 			{
+			if(position==null || bam==null) return;
+			
 			reference=bam.getReference().getIndexedFastaSequenceFile();
 			HTMLVizBam viz=new HTMLVizBam(bam.getFile(),reference);
 			synchronized(IndexedFastaSequenceFile.class)
