@@ -15,6 +15,10 @@
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
 <h1><c:out value="${vcf.name}" escapeXml="true"/></h1>
+<div><code><c:out value="${vcf.path}" escapeXml="true"/></code></div>
+<div><c:out value="${vcf.description}" escapeXml="true"/></div>
+
+<c:if test="${not vcf.indexedWithTabix}"><div style="color:red;"> **NOT INDEXED WITH TABIX**</div></c:if>
 
 
 <div class="box1">

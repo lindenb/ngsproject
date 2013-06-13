@@ -18,4 +18,5 @@ public interface VCF extends ActiveRecord
 	public List<Project> getProjects();
 	public Linkage getGenotypes(Interval interval);
 	public SortedSet<Variation> getVariations(Interval interval);
+	public boolean isIndexedWithTabix();
 	}

@@ -6,16 +6,14 @@ public class Variation implements Comparable<Variation>
 	private int pos;
 	private String ID;
 	private String ref;
-	private String alt;
 	
-	public Variation(String chrom, int pos, String iD, String ref, String alt)
+	public Variation(String chrom, int pos, String iD, String ref)
 		{
 		super();
 		this.chrom = chrom;
 		this.pos = pos;
 		ID = iD;
 		this.ref = ref;
-		this.alt = alt;
 		}
 	
 	public String getChrom() {
@@ -30,15 +28,11 @@ public class Variation implements Comparable<Variation>
 	public String getRef() {
 		return ref;
 	}
-	public String getAlt() {
-		return alt;
-	}
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + alt.hashCode();
 		result = prime * result + chrom.hashCode();
 		result = prime * result + pos;
 		result = prime * result + ref.hashCode();
@@ -54,23 +48,9 @@ public class Variation implements Comparable<Variation>
 		if (getClass() != obj.getClass())
 			return false;
 		Variation other = (Variation) obj;
-		if (pos != other.pos)
-			return false;
-		if (alt == null) {
-			if (other.alt != null)
-				return false;
-		} else if (!alt.equalsIgnoreCase(other.alt))
-			return false;
-		if (chrom == null) {
-			if (other.chrom != null)
-				return false;
-		} else if (!chrom.equals(other.chrom))
-			return false;
-		if (ref == null) {
-			if (other.ref != null)
-				return false;
-		} else if (!ref.equals(other.ref))
-			return false;
+		if (pos != other.pos) return false;
+		if (!chrom.equals(other.chrom)) return false;
+		if (!ref.equals(other.ref)) return false;
 		return true;
 	}
 	
@@ -82,14 +62,13 @@ public class Variation implements Comparable<Variation>
 		i=pos-var.pos;
 		if(i!=0) return i;
 		i=ref.compareTo(var.ref);
-		if(i!=0) return i;
-		return alt.compareTo(var.alt);
+		return i;
 		}
 	
 	@Override
 	public String toString()
 		{
-		String s=chrom + ":" + pos+"("+ref+"/"+alt+")";
+		String s=chrom + ":" + pos+"("+ref+")";
 		if(ID!=null) s+=" "+ID;
 		return s;
 		}

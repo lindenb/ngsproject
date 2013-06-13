@@ -2,8 +2,11 @@ package com.github.lindenb.ngsproject.model;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -14,19 +17,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.readers.TabixReader;
+import org.broadinstitute.variant.variantcontext.Allele;
+import org.broadinstitute.variant.variantcontext.VariantContext;
+import org.broadinstitute.variant.vcf.VCFCodec;
+import org.broadinstitute.variant.vcf.VCFHeader;
 
 import net.sf.picard.io.IoUtil;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import net.sf.picard.util.Interval;
+import net.sf.samtools.util.BlockCompressedInputStream;
 
 public class Model
 {
@@ -253,11 +264,19 @@ protected class DefaultActiveRecord
 				if( methodName.equals("getName") ||
 					methodName.equals("getPath") || 
 					methodName.equals("toString") ||  
-					methodName.equals("getFile") )
+					methodName.equals("getFile") ||
+					methodName.equals("isIndexedWithTabix")
+					)
 					{
 					String path= getString(this,"path");
 					if( methodName.equals("getFile")) return new File(path);
 					if( methodName.equals("getName")) return new File(path).getName();
+					if( methodName.equals("isIndexedWithTabix"))
+						{
+						File f=new File(path);
+						File tbi=new File(path+".tbi");
+						return tbi.exists() && tbi.lastModified()>=f.lastModified();
+						}
 					return path;
 					}
 				
@@ -830,73 +849,46 @@ private Linkage getLinkage
 		)
 	{
 	List<Genotype> genotypes=new ArrayList<Genotype>();
-	if(1<2) return new Linkage(genotypes);
 	for(VCF vcf:vcfs)
 		{
-	
+		if(!vcf.isIndexedWithTabix()) continue;
+		VCFCodec codec=new VCFCodec();
 		TabixReader tabixReader=null;
 		TabixReader.Iterator iter=null;
-		BufferedReader r=null;
+		AsciiLineReader r=null;
+		BlockCompressedInputStream bcis=null;
 		try {
-			
-			r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
+			bcis=new BlockCompressedInputStream(vcf.getFile());
+			r=new AsciiLineReader(bcis);
+			codec.readHeader(r);
+			r.close();
 			String line;
 			
-			Pattern tab=Pattern.compile("[\t]");
-			Pattern colon=Pattern.compile("[\\:]");
-			Map<Sample,Integer> sample2columns=new HashMap<Sample, Integer>(samples.size());
-			while((line=r.readLine())!=null)
-				{
-				if(!line.startsWith("#")) return new Linkage(genotypes);
-				if(!line.startsWith("#CHROM\t")) continue;
-				String tokens[]=tab.split(line);
-				for(int i=9;i< tokens.length;++i)
-					{
-					for(Sample S:samples)
-						{
-						if(!tokens[i].equals(S.getName())) continue;
-						sample2columns.put(S, i);
-						}
-					}
-				break;
-				}
-			r.close();
-			r=null;
-			if(sample2columns.isEmpty()) return new Linkage(genotypes);
 			
 			tabixReader=new TabixReader(vcf.getPath());
+			System.err.println("#interval;"+interval);
 			iter=tabixReader.query(interval.getSequence()+":"+interval.getStart()+"-"+interval.getEnd());
 			while(iter!=null && (line=iter.next())!=null)
 				{
-				String tokens[]=tab.split(line);
-				if(tokens.length<9) continue;
-				Variation variation=new Variation(
-						tokens[0],
-						Integer.parseInt(tokens[1]), 
-						(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
-						tokens[3].toUpperCase(),
-						tokens[4].toUpperCase()
-						);
-				String format[]=colon.split(tokens[8]);
-				int gt_column=-1;
-				for(int i=0;i< format.length;++i)
+				VariantContext var=codec.decode(line);
+				System.err.println("#line;"+line);
+				Variation variation=new Variation(var.getChr(), var.getStart(), var.getID(), var.getReference().getBaseString());
+
+				for(Sample S:samples)
 					{
-					if(format[i].equals("GT"))
-						{
-						gt_column=i;
-						break;
-						}
-					}
-				for(Sample sample: sample2columns.keySet())
-					{
-					int column=sample2columns.get(sample);
-					if(column>=tokens.length) continue;
-					if(tokens[column].isEmpty() || tokens[column].equals(".")) continue;
-					format=colon.split(tokens[column]);
-					if(gt_column>=format.length)continue;
-					String genotype=tokens[gt_column];
-					if(genotype.isEmpty() ||genotype.equals(".")||genotype.equals("./.")) continue;
-					genotypes.add(new Genotype(variation, sample, genotype));
+					org.broadinstitute.variant.variantcontext.Genotype g=var.getGenotype(S.getName());
+					if(g==null) continue;
+					if(!g.isAvailable()) continue;
+					if(!g.isCalled()) continue;
+					if(g.isNoCall()) continue;
+					if(g.isHomRef()) continue;
+					List<Allele> alleles=g.getAlleles();
+					if(alleles.size()!=2) continue;
+					genotypes.add(new Genotype(
+							variation , S,
+							alleles.get(0).getBaseString(),
+							alleles.get(1).getBaseString()
+							));
 					}
 				}
 			
@@ -904,15 +896,16 @@ private Linkage getLinkage
 			}
 		catch (Exception err)
 			{
-			throw new RuntimeException(err);
+			err.printStackTrace();
 			}
 		finally
 			{
-			if(r!=null) try { r.close();} catch(IOException err) {}
+			if(bcis!=null ) try { bcis.close();} catch(Exception err) {}
+			if(r!=null) try { r.close();} catch(Exception err) {}
 			if(tabixReader!=null) tabixReader.close();
 			}
 		}
-	return new Linkage(genotypes);
+	return new Linkage(samples,genotypes);
 	}
 
 
@@ -941,8 +934,7 @@ private SortedSet<Variation> getVariations
 					tokens[0],
 					Integer.parseInt(tokens[1]), 
 					(tokens[2].isEmpty() || tokens[2].equals(".")?null:tokens[2]),
-					tokens[3].toUpperCase(),
-					tokens[4].toUpperCase()
+					tokens[3].toUpperCase()
 					);
 			vars.add(variation);
 			}

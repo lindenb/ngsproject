@@ -102,6 +102,7 @@ public class VCFViewServlet extends HttpServlet
 				}
 			
 			
+			
 			BufferedReader r=null;
 			TabixReader tabix=null;
 			long limit=1000L;
@@ -143,10 +144,16 @@ public class VCFViewServlet extends HttpServlet
 					r.close();
 					r=null;
 					}
+				else if(!vcf.isIndexedWithTabix())
+					{
+					w.println("##Sorry "+vcf.getPath()+" was NOT indexed with tabix");
+					}
 				else
 					{
 					r.close();
 					r=null;
+					
+					
 					tabix=new TabixReader(vcf.getPath());
 					TabixReader.Iterator iter=tabix.query(
 							interval.getName()+":"+interval.getStart()+"-"+interval.getEnd());

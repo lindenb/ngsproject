@@ -31,7 +31,10 @@
 	<c:forEach var="i" items="${ngs:filter(pageContext.request,vcfs)}">
 		<tr>
 			<td><u:vcf-href vcf="${i}"/></td>
-			<td><c:out value="${i.description}" escapeXml="true"/></td>
+			<td>
+				<c:out value="${i.description}" escapeXml="true"/>
+				<c:if test="${not i.indexedWithTabix}"> **NOT INDEXED WITH TABIX**</c:if>
+			</td>
 			<td><u:reference-href u:reference="${i.reference}"/></td>
 			<td>
 				<c:forEach var="j" items="${ngs:filter(pageContext.request,i.samples)}">

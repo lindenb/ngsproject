@@ -61,7 +61,6 @@ Linkage l1 =p1.getGenotypes(new Interval(
 		));
 pageContext.setAttribute("linkage",l1);
 %>
-
 <table>
 	<tr>
 		<th>Sample</th>
@@ -70,12 +69,13 @@ pageContext.setAttribute("linkage",l1);
 		</c:forEach>
 	</tr>
 	<c:forEach var="j" items="${linkage.samples}">
+		<tr>
 		<th><u:sample-href sample="${j}"/></th>
 		<c:forEach var="i" items="${linkage.variations}">
 			<th>
 			<%
 			Sample S2=(Sample)pageContext.getAttribute("j");
-			Variation V2=(Variation)pageContext.getAttribute("j");
+			Variation V2=(Variation)pageContext.getAttribute("i");
 			pageContext.setAttribute("genotypes", l1.getGenotypes(V2,S2));
 			%>
 			<c:forEach var="k" items="${genotypes}">
@@ -83,6 +83,7 @@ pageContext.setAttribute("linkage",l1);
 			</c:forEach>
 			</th>
 		</c:forEach>
+		</tr>
 	</c:forEach>
 	
 	
@@ -97,7 +98,7 @@ pageContext.setAttribute("linkage",l1);
 		
 		<h3><c:out value="${bam.name}" escapeXml="true"/></h3>
 		<div>Sample: <u:sample-href sample="${bam.sample}" /></div>
-		<div><u:bam-href project="${project}" bam="${bam}" interval="${param.pos}"/></div>
+		<div><u:bam-href bam="${bam}" interval="${param.pos}"/></div>
 		
 		<div>
 		<c:forTokens items="${stylenames}" delims="," var="csssel">

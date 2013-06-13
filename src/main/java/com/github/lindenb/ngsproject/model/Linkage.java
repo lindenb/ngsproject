@@ -1,21 +1,21 @@
 package com.github.lindenb.ngsproject.model;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
 
 public class Linkage {
+private List<Sample> samples;
 private List<Genotype> genotypes;
-public Linkage(List<Genotype> genotypes)
+public Linkage(
+		List<Sample> samples,
+		List<Genotype> genotypes
+		)
 	{
+	this.samples=samples;
 	this.genotypes=genotypes;
 	}
 public boolean isEmpty()
@@ -35,14 +35,9 @@ public SortedSet<Variation> getVariations()
 	return vars;
 	}
 
-public SortedSet<Sample> getSamples()
+public List<Sample> getSamples()
 	{
-	SortedSet<Sample> vars=new TreeSet<Sample>();
-	for(Genotype g:genotypes)
-		{
-		vars.add(g.getSample());
-		}
-	return vars;
+	return samples;
 	}
 
 public Set<String> getGenotypes(Variation var,Sample sample)
@@ -50,9 +45,14 @@ public Set<String> getGenotypes(Variation var,Sample sample)
 	Set<String> gens=new TreeSet<String>();
 	for(Genotype g:genotypes)
 		{
-		if(!g.getVariation().equals(var)) continue;
-		if(!g.getSample().equals(sample)) continue;
-		gens.add(g.getValue());
+		if(!g.getVariation().equals(var))
+			{
+			continue;
+			}
+		if(g.getSample().getName().equals(sample.getName()))
+			{
+			gens.add(g.getA1()+"/"+g.getA2());
+			}
 		}
 	return gens;
 	}
