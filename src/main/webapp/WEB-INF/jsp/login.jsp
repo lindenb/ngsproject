@@ -8,14 +8,13 @@
 <head>
 <title>Login</title>
 <u:head/>
-<link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
     <form class="form-horizontal"
-    	action="${pageContext.request.contextPath}/ngsprojects/validate"
+    	action="${proxyBase}${pageContext.request.contextPath}/ngsprojects/validate"
     	method="POST" >
     <div class="control-group">
     <label class="control-label" for="username">Login</label>

@@ -9,11 +9,11 @@
 <head>
 <title>Projects</title>
 <u:head/>
-<link type="text/css" rel="stylesheet" href="${pageContext.request.contextPath}/style/main.css?r=<%= java.lang.System.currentTimeMillis() %>"/>
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
+
 
 <div class="box1"><h2>Projects</h2>
 <table>

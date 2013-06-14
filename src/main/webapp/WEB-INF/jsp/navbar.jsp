@@ -20,14 +20,14 @@
          	
           		<li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Go<b class="caret"></b></a>
 	          		<ul class="dropdown-menu">  
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/projects">Projects</a></li>
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/references">References</a></li>
-                     	<li><a href="${pageContext.request.contextPath}/ngsprojects/vcfs">VCF</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/projects">Projects</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/references">References</a></li>
+                     	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/vcfs">VCF</a></li>
                     	<c:if test="${sessionScope.user.admin}">
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/samples">Samples</a></li>
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/bams">Bams</a></li>
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/users">Users</a></li>
-                    	<li><a href="${pageContext.request.contextPath}/ngsprojects/groups">Groups</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/samples">Samples</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/bams">Bams</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/users">Users</a></li>
+                    	<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/groups">Groups</a></li>
                     	</c:if>
 				    </ul>
 			  	</li>
@@ -39,9 +39,6 @@
           	<c:when test="${sessionScope.user.admin}">
           		<li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin  <b class="caret"></b></a>
           		<ul class="dropdown-menu">  
-					<li><a href="${pageContext.request.contextPath}/ngsprojects/admin/addsample">Add Sample</a></li>  
-					<li><a href="${pageContext.request.contextPath}/ngsprojects/admin/adduser">Add User</a></li>  
-					<li><a href="${pageContext.request.contextPath}/ngsprojects/admin/addgroup">Add Group</a></li>  
 			    </ul>
 			  	</li>
           	</c:when>
@@ -49,10 +46,10 @@
           
           <c:choose>
           	<c:when test="${sessionScope.user.logged}">
-          		  <li><a href="${pageContext.request.contextPath}/ngsprojects/logout">Logout</a></li>
+          		  <li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/logout">Logout</a></li>
           	</c:when>
           	<c:otherwise>
-          		<li><a href="${pageContext.request.contextPath}/ngsprojects/login">Login</a></li>
+          		<li><a href="${proxyBase}${pageContext.request.contextPath}/ngsprojects/login">Login</a></li>
           	</c:otherwise>
           </c:choose>
           

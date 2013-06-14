@@ -36,7 +36,7 @@
 
 <div>
     <form class="form-search"
-    	action="${pageContext.request.contextPath}/ngsprojects/project/${project.id}"
+    	action="${proxyBase}${pageContext.request.contextPath}/ngsprojects/project/${project.id}"
     	method="GET" >
     	<label class="control-label" for="pos">Jump to</label>
 	    	<input type="text"

@@ -33,7 +33,6 @@ public class Functions
 			}
 	
 	
-	
 	public static boolean visible(
 			final HttpServletRequest req,
 			final ActiveRecord rec
@@ -84,6 +83,9 @@ public class Functions
 			default: return false;
 			}
 		}
+	
+	
+	
 	public static <T extends ActiveRecord> Collection<T> filter(final HttpServletRequest req,Collection<T> t)
 		{
 		List<T> L=new ArrayList<T>();

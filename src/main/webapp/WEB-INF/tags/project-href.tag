@@ -6,6 +6,6 @@
 <c:otherwise>
 <c:url value="/ngsprojects/project/${project.id}" var="url">
 </c:url>
-<a href="<c:out value="${url}" escapeXml="true"/>"><c:out value="${project.name}" escapeXml="true"/></a>
+<a href="<c:out value="${proxyBase}${url}" escapeXml="true"/>"><c:out value="${project.name}" escapeXml="true"/></a>
 </c:otherwise>
 </c:choose>

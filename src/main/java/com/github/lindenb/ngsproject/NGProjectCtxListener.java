@@ -11,7 +11,6 @@ import javax.servlet.ServletException;
 
 import com.github.lindenb.ngsproject.model.DefaultModel;
 import com.github.lindenb.ngsproject.model.Model;
-import com.github.lindenb.ngsproject.model.ModelI;
 import com.github.lindenb.ngsproject.model.sql.SimpleDataSource;
 
 public class NGProjectCtxListener implements ServletContextListener

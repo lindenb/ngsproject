@@ -1,12 +1,7 @@
 package com.github.lindenb.ngsproject.model;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -19,11 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -35,9 +27,8 @@ import org.broad.tribble.readers.TabixReader;
 import org.broadinstitute.variant.variantcontext.Allele;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 import org.broadinstitute.variant.vcf.VCFCodec;
-import org.broadinstitute.variant.vcf.VCFHeader;
 
-import net.sf.picard.io.IoUtil;
+
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import net.sf.picard.util.Interval;
 import net.sf.samtools.util.BlockCompressedInputStream;
@@ -54,6 +45,7 @@ public class DefaultModel implements Model
 		Object v;
 		}
 	
+	@SuppressWarnings("unchecked")
 	private class SQLList<T> extends AbstractList<T>
 		{
 		private Integer _size=null;
@@ -71,7 +63,7 @@ public class DefaultModel implements Model
 			for(int i=0;i< arguments.size();++i)
 				{
 				SQLArgument arg=arguments.get(i);
-				pstmt.setObject(i, arg.v, arg.sqlType);
+				pstmt.setObject(i+1, arg.v, arg.sqlType);
 				}
 			return pstmt;
 			}
@@ -81,6 +73,11 @@ public class DefaultModel implements Model
 			{
 			if(_size==null)
 				{
+				if(this.buffer_offset==-1)
+					{
+					this.buffer_offset=0;
+					buffer=new ArrayList<Object>(this.buffer_capacity);
+					}
 				Connection connection=null;
 				PreparedStatement pstmt=null;
 				ResultSet row=null;
@@ -90,11 +87,19 @@ public class DefaultModel implements Model
 					connection=getDataSource().getConnection();
 					pstmt=prepareStatement(connection);
 					row=pstmt.executeQuery();
-					while(row.next()) n++;
+					while(row.next())
+						{
+						if(this.buffer_offset==0 && n< this.buffer_capacity)
+							{
+							buffer.add(this.extractor.extract(row));
+							}
+						n++;
+						}
 					this._size=n;
 					}
 				catch (Exception e)
 					{
+					this.buffer_offset=-1;
 					throw new RuntimeException(e);
 					}
 				finally
@@ -106,6 +111,7 @@ public class DefaultModel implements Model
 				}
 			return this._size;
 			}
+		
 		@Override
 		public T get(int idx)
 			{
@@ -199,6 +205,7 @@ public class DefaultModel implements Model
 			L.extractor=extractor;
 			return this;
 			}
+		
 		public SQLListFactory<T> setCapacity(int n)
 			{
 			L.buffer_capacity=Math.max(n,1);

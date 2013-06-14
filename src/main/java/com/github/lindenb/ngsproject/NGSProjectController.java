@@ -1,18 +1,9 @@
 package com.github.lindenb.ngsproject;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.security.MessageDigest;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.github.lindenb.ngsproject.model.Bam;
-import com.github.lindenb.ngsproject.model.Group;
 import com.github.lindenb.ngsproject.model.Model;
 import com.github.lindenb.ngsproject.model.Project;
 import com.github.lindenb.ngsproject.model.Reference;
@@ -34,7 +24,7 @@ import com.github.lindenb.vizbam.locparser.LocParser;
 @SuppressWarnings("serial")
 public class NGSProjectController extends HttpServlet
 	{
-	private static final String PROJECT_FILE_PATH="project.file.path";
+	//private static final String PROJECT_FILE_PATH="project.file.path";
 	/* "The JAXBContext class is thread safe" http://jaxb.java.net/guide/Performance_and_thread_safety.html */
 	
 	
@@ -73,7 +63,7 @@ public class NGSProjectController extends HttpServlet
 		else if(path[0].equals("logout"))
 			{
 			req.getSession().invalidate();
-			resp.sendRedirect("/ngsproject/ngsprojects");
+			resp.sendRedirect(""+req.getAttribute("proxyBase")+"/ngsproject/ngsprojects");
 			return;
 			}
 		else if(path[0].equals("validate"))
@@ -90,6 +80,7 @@ public class NGSProjectController extends HttpServlet
 			User user=null;
 			for(User u:model.getAllUsers())
 				{
+				
 				if(u.getName().equals(username) && password.equals(u.getSha1Sum()))
 					{
 					user=u;
@@ -101,9 +92,10 @@ public class NGSProjectController extends HttpServlet
 				currentUser=new UserPref();
 				currentUser.setUser(user);
 				currentUser.getMessages().add(new Message("logged as "+username,Message.MsgType.ok));
-
+				
 				req.getSession().setAttribute("user", currentUser);
-				resp.sendRedirect("/ngsproject/ngsprojects");
+				
+				resp.sendRedirect(""+req.getAttribute("proxyBase")+"/ngsproject/ngsprojects");
 				return;
 				}
 			else
@@ -155,6 +147,17 @@ public class NGSProjectController extends HttpServlet
 			{
 			dispathPath="/WEB-INF/jsp/references.jsp";
 			req.setAttribute("references", model.getAllReferences());
+			}
+		else if(path[0].equals("reference") && path.length>1 && isULong(path[1]))
+			{
+			Reference ref=model.getReferenceById(Long.parseLong(path[1]));
+			if(ref==null)
+				{
+				if(ref==null) throw new ServletException("Cannot find ref "+path[1]);
+				}
+			
+			dispathPath="/WEB-INF/jsp/reference.jsp";
+			req.setAttribute("reference",ref);
 			}
 		else if(path[0].equals("bams"))
 			{

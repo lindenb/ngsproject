@@ -63,7 +63,7 @@
 
 <div>
     <form class="form-search"
-    	action="${pageContext.request.contextPath}/vcfview"
+    	action="${proxyBase}${pageContext.request.contextPath}/vcfview"
     	method="GET"
     	 target="vcfframe"
     	>

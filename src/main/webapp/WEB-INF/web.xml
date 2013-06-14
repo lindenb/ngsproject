@@ -46,6 +46,7 @@
   <servlet-mapping>
 	<servlet-name>main</servlet-name>
 	<url-pattern>/ngsprojects/*</url-pattern>
+	<url-pattern>/ngsproject/*</url-pattern>
   </servlet-mapping>
   
   
