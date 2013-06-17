@@ -57,20 +57,27 @@
 
 <h2>VCF</h2>
 <div class="box1">
-<table>
-<thead>
-	<tr>
-		<th>VCF</th>
-	</tr>
-	</thead>
-<tbody>
-	<c:forEach var="v" items="${ngs:filter(pageContext.request,sample.vcfs)}">
-		<tr>
-			<td><u:vcf-href vcf="${v}"/></td>
-		</tr>
+    <form class="form-search"
+    	action="${pageContext.request.contextPath}/ngsprojects/sample/${sample.id}"
+    	method="GET"
+    	>
+	<label class="control-label" for="pos">Jump to</label>
+	    	<input type="text"
+	    		placeholder="chrom:start-end"
+	    		name="interval"
+	    		class="input-medium search-query"
+	    		value="<c:out value="${param.interval}" escapeXml="true"/>"
+	    		/>
+	<button type="submit" class="btn btn-primary">Go</button>
+	<c:forEach var="vcf" items="${ngs:filter(pageContext.request,sample.vcfs)}">
+		<div>
+		<b><u:vcf-href vcf="${vcf}"/></b><pre><ngs:viewvcf vcf="${vcf}" 
+			interval="${param.interval}"
+			escapeXml="true"
+			/></pre>		
+		</div>
 	</c:forEach>
-</tbody>
-</table>
+	</form>
 </div>
 
 
