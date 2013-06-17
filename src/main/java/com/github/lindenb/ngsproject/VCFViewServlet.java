@@ -49,6 +49,8 @@ public class VCFViewServlet extends HttpServlet
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException
 		{
+		PrintWriter w=resp.getWriter();
+		
 		Model model=(Model)req.getServletContext().getAttribute("model");
 		if(model==null) throw new ServletException("model is null");
 		
@@ -85,7 +87,8 @@ public class VCFViewServlet extends HttpServlet
 			vcf=null;
 			}
 		
-		PrintWriter w=resp.getWriter();
+		
+		
 
 		if(vcf==null)
 			{
@@ -178,7 +181,7 @@ public class VCFViewServlet extends HttpServlet
 				}
 			}
 		if(w!=null) try { w.flush();} catch(Exception err){}
-		if(w!=null) try { w.close();} catch(Exception err){}
+		//if(w!=null) try { w.close();} catch(Exception err){}
 		}
 	
 	@Override

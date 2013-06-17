@@ -11,6 +11,7 @@
 <%@page import="net.sf.picard.util.Interval"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="u" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="ngs" uri="http://github.com/lindenb/ngsproject/tags"%>
 <jsp:include page="/WEB-INF/jsp/xhtml-header.jsp"/>
 <head>
 <title><c:out value="${project.name}" escapeXml="true"/></title>
@@ -54,11 +55,13 @@
 
 SAMSequencePosition loc1=(SAMSequencePosition)request.getAttribute("pos");
 Project p1=(Project)request.getAttribute("project");
-Linkage l1 =p1.getGenotypes(new Interval(
+Interval interval= new Interval(
 		loc1.getName(),
 		loc1.getPosition(),
 		loc1.getPosition()+80
-		));
+		);
+pageContext.setAttribute("interval",interval);
+Linkage l1 =p1.getGenotypes(interval);
 pageContext.setAttribute("linkage",l1);
 %>
 <table>
@@ -90,7 +93,7 @@ pageContext.setAttribute("linkage",l1);
 </table>
 
 </c:if>
-
+<h2>BAM</h2>
 	<c:forEach var="bam" items="${project.bams}">
 	<div>
 		<a name="bam${bam.id}"/>
@@ -110,8 +113,20 @@ pageContext.setAttribute("linkage",l1);
 		
 	</div>
 	</c:forEach>
-
 </div>
+<h2>VCFs</h2>
+
+	<c:forEach var="vcf" items="${project.vcfs}">
+	<div>
+		<a name="vcf${vcf.id}"/>
+		<div><u:vcf-href vcf="${vcf}"/></div>
+		<pre><ngs:viewvcf vcf="${vcf}" 
+			interval="${interval.sequence}:${interval.start}-${interval.end}"
+			escapeXml="true"
+			/></pre>
+	</div>
+	</c:forEach>
+
 
 </body>
 </html>

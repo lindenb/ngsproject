@@ -1,6 +1,5 @@
 package com.github.lindenb.ngsproject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,9 +11,11 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.SimpleTagSupport;
 
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.readers.TabixReader;
 
-import net.sf.picard.io.IoUtil;
+import net.sf.samtools.util.BlockCompressedInputStream;
+
 import com.github.lindenb.ngsproject.model.VCF;
 import com.github.lindenb.vizbam.SAMSequenceInterval;
 import com.github.lindenb.vizbam.locparser.LocParser;
@@ -127,7 +128,7 @@ public class VCFViewTag extends SimpleTagSupport
 	public void doTag() throws JspException, IOException
 		{
 		if(this.vcf==null || !this.vcf.isIndexedWithTabix()) return;
-
+		
 		JspWriter w=getJspContext().getOut();
 		PageContext pageCtxt=(PageContext)this.getJspContext();
 		
@@ -136,14 +137,17 @@ public class VCFViewTag extends SimpleTagSupport
 		SAMSequenceInterval interval=LocParser.parseInterval(
 					vcf.getReference().getIndexedFastaSequenceFile().getSequenceDictionary(),
 					getInterval(), true);
-		if(interval==null) return;
+		if(interval==null)
+			{
+			return;
+			}
 		
 		
-		BufferedReader r=null;
+		AsciiLineReader r=null;
 		TabixReader tabix=null;
 		try
 			{
-			r=IoUtil.openFileForBufferedUtf8Reading(vcf.getFile());
+			r=new AsciiLineReader(new BlockCompressedInputStream(vcf.getFile()));
 			String line;
 			Set<Integer> visible_columns=new HashSet<Integer>();
 			Pattern tab=Pattern.compile("[\t]");

@@ -6,6 +6,6 @@
 <c:otherwise>
 <c:url value="/ngsprojects/vcf/${vcf.id}" var="url">
 </c:url>
-<a href="<c:out value="${url}" escapeXml="true"/>"><c:out value="${vcf.name}" escapeXml="true"/></a>
+<a href="<c:out value="${url}" escapeXml="true"/>"><c:out value="${vcf.path}" escapeXml="true"/></a>
 </c:otherwise>
 </c:choose>
