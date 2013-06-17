@@ -15,7 +15,6 @@ import javax.servlet.jsp.tagext.SimpleTagSupport;
 import org.broad.tribble.readers.TabixReader;
 
 import net.sf.picard.io.IoUtil;
-import com.github.lindenb.ngsproject.model.DefaultModel;
 import com.github.lindenb.ngsproject.model.VCF;
 import com.github.lindenb.vizbam.SAMSequenceInterval;
 import com.github.lindenb.vizbam.locparser.LocParser;
@@ -127,7 +126,7 @@ public class VCFViewTag extends SimpleTagSupport
 	@Override
 	public void doTag() throws JspException, IOException
 		{
-		if(this.vcf==null) return;
+		if(this.vcf==null || !this.vcf.isIndexedWithTabix()) return;
 
 		JspWriter w=getJspContext().getOut();
 		PageContext pageCtxt=(PageContext)this.getJspContext();
@@ -181,7 +180,7 @@ public class VCFViewTag extends SimpleTagSupport
 			tabix=new TabixReader(vcf.getPath());
 			TabixReader.Iterator iter=tabix.query(
 					interval.getName()+":"+interval.getStart()+"-"+interval.getEnd());
-			while((line=iter.next())!=null && limit>0L)
+			while(iter!=null && (line=iter.next())!=null && limit>0L)
 				{
 				--limit;
 				if(vcf_visible) print(tab,w,line,visible_columns);

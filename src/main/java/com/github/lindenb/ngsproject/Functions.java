@@ -12,7 +12,7 @@ import com.github.lindenb.ngsproject.model.Bam;
 import com.github.lindenb.ngsproject.model.Group;
 import com.github.lindenb.ngsproject.model.Project;
 import com.github.lindenb.ngsproject.model.Sample;
-import com.github.lindenb.ngsproject.model.User;
+import com.github.lindenb.ngsproject.model.Table;
 import com.github.lindenb.ngsproject.model.VCF;
 
 public class Functions
@@ -25,9 +25,9 @@ public class Functions
 			if(g==null ) return false;
 			if(g.isPublic()) return true;
 			if(!user.isLogged()) return false;
-			for(User u:g.getUsers())
+			for(ActiveRecord u:g.getUsers())
 				{
-				if(u.getId()==user.getUser().getId()) return true;
+				if(u.getTable()==Table.USER && u.getId()==user.getUser().getId()) return true;
 				}
 			return false;
 			}

@@ -66,6 +66,8 @@ insert into USER2GROUP(user_id,group_id) values(
 	( select id from USERGROUP where name = '<xsl:value-of select="."/>' )
 	
 	);	
+	
+	
 </xsl:for-each>
 
 

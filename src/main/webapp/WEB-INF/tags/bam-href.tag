@@ -10,6 +10,6 @@
    <c:param name="interval" value="${interval}" />
 </c:if>
 </c:url>
-<a href="<c:out value="${proxyBase}${url}" escapeXml="true"/>">file://<c:out value="${bam.path}" escapeXml="true"/></a>
+<a href="<c:out value="${url}" escapeXml="true"/>">file://<c:out value="${bam.path}" escapeXml="true"/></a>
 </c:otherwise>
 </c:choose>

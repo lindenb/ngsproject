@@ -63,7 +63,7 @@ public class NGSProjectController extends HttpServlet
 		else if(path[0].equals("logout"))
 			{
 			req.getSession().invalidate();
-			resp.sendRedirect(""+req.getAttribute("proxyBase")+"/ngsproject/ngsprojects");
+			resp.sendRedirect("/ngsproject/ngsprojects");
 			return;
 			}
 		else if(path[0].equals("validate"))
@@ -95,7 +95,7 @@ public class NGSProjectController extends HttpServlet
 				
 				req.getSession().setAttribute("user", currentUser);
 				
-				resp.sendRedirect(""+req.getAttribute("proxyBase")+"/ngsproject/ngsprojects");
+				resp.sendRedirect("/ngsproject/ngsprojects");
 				return;
 				}
 			else

@@ -14,7 +14,7 @@
 <jsp:include page="/WEB-INF/jsp/messages.jsp"/>
 
     <form class="form-horizontal"
-    	action="${proxyBase}${pageContext.request.contextPath}/ngsprojects/validate"
+    	action="${pageContext.request.contextPath}/ngsprojects/validate"
     	method="POST" >
     <div class="control-group">
     <label class="control-label" for="username">Login</label>

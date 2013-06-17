@@ -22,7 +22,7 @@
 </c:url>
 
 
-<form method="GET" action="<c:out value="${proxyBase}${url}" escapeXml="true"/>" target="bamframe">
+<form method="GET" action="<c:out value="${url}" escapeXml="true"/>" target="bamframe">
 <input type="hidden" name="bam-id" value="${bam.id}"/>
 <div class="row-fuild">
 <div class="span4">

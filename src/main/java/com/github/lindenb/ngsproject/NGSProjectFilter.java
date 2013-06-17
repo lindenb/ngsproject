@@ -33,22 +33,20 @@ public class NGSProjectFilter implements Filter
 			{
 			res.setCharacterEncoding(enc);
 			}
+		/*
 		if(req instanceof HttpServletRequest)
 			{
 			String proxyBase="";
-			/** quick hack for http redirection= UGLY */
 			String x_forwarded_host=HttpServletRequest.class.cast(req).getHeader("x-forwarded-host");
 			if(x_forwarded_host!=null)
 				{
-				//String proxy_prefix=(String)cfg.getInitParameter("proxy_prefix");
-				//if(proxy_prefix==null) proxy_prefix="/glassfish";
 				
 				proxyBase=HttpServletRequest.class.cast(req).getScheme()+
 						"://"+x_forwarded_host+"/glassfish"
 						;
 				}
 			HttpServletRequest.class.cast(req).setAttribute("proxyBase", proxyBase);
-			}
+			}*/
 		
 		/** redirect to error on init-context error */
 		Object err;

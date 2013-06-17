@@ -38,6 +38,21 @@ public class DefaultModel implements Model
 	private final Map<String,IndexedFastaSequenceFile>  path2reference=java.util.Collections.synchronizedMap(
 			new HashMap<String,IndexedFastaSequenceFile>());
 		
+	/*
+	public static Method PROJECT_GETBAMS;
+	public static Method BAM_GETPROJECTS;
+	
+			{{{
+			try
+				{
+				DefaultModel.PROJECT_GETBAMS=Project.class.getMethod("getBams");
+				DefaultModel.BAM_GETPROJECTS=Project.class.getMethod("getBams");
+				}
+			catch(NoSuchMethodException err)
+				{
+				throw new RuntimeException(err);
+				}
+			}}}*/
 	
 	private static class SQLArgument
 		{
@@ -268,11 +283,14 @@ public class DefaultModel implements Model
 			EntityExtractor(Class<T> clazz)
 				{
 				this.clazz=clazz;
+				if(this.clazz==null) throw new NullPointerException();
 				}
 			@Override
 			public T extract(ResultSet row) throws SQLException
 				{
-				return wrap(this.clazz,row.getLong(1));
+				T o=wrap(this.clazz,row.getLong(1));
+				if(o==null) throw new NullPointerException("ID="+row.getLong(1));
+				return o;
 				}
 			
 			}
@@ -421,7 +439,7 @@ public class DefaultModel implements Model
 						}
 					if(methodName.equals("getUsers"))
 						{
-						return manyToMany(Group.class,
+						return manyToMany(User.class,
 								"select distinct user_id from user2group where group_id=?",
 								this.id
 								);
@@ -782,11 +800,12 @@ public class DefaultModel implements Model
 	@SuppressWarnings("unchecked")
 	private <T extends ActiveRecord> T wrap(Class<T> C,long id)
 		{
-		return (T) Proxy.newProxyInstance(
+		T o= (T) Proxy.newProxyInstance(
 				C.getClassLoader(),
 	            new Class[] { C },
 	            new DefaultActiveRecord(class2table(C),id)
 	            );
+		return o;
 		}
 	
 	private boolean contains(Table table,long id)
